@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  image     String?
+  role      Role     @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  carts     Cart[]
+
+  @@map("users")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Product {
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  name            String
+  description     String
+  price           Float
+  discountedPrice Float?
+  images          String[]
+  category        Category
+  material        String
+  weight          String
+  inStock         Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
+
+  @@map("products")
+}
+
+enum Category {
+  NECKLACES
+  EARRINGS
+  RINGS
+  BRACELETS
+  PENDANTS
+  SETS
+  OTHERS
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  total           Float
+  status          OrderStatus @default(PENDING)
+  paymentId       String?
+  razorpayOrderId String?
+  shippingAddress Address?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+
+  @@map("order_items")
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  street    String
+  city      String
+  state     String
+  country   String
+  zipCode   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  orderId   String   @unique
+  createdAt DateTime @default(now())
+
+  @@map("addresses")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  items     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("carts")
+}

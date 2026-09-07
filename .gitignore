@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Secrets and keys
+*.pem
+*.bak
+*.orig
+
+# Prisma
+*.db
+*.sqlite
+*.db-journal
+
+# Caches
+.cache/
+.turbo/
+.eslintcache
+.npm
+.pnp
+.pnp.js
+.yarn-integrity
+.pnpm-store/
+
+# Pack output
+*.tgz
+.node_repl_history

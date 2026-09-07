@@ -1,0 +1,35 @@
+{
+  "name": "thumba",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "storefront",
+    "dashboard",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=storefront\" \"npm run dev --workspace=dashboard\"",
+    "dev:storefront": "npm run dev --workspace=storefront",
+    "dev:dashboard": "npm run dev --workspace=dashboard",
+    "build": "npm run build --workspaces",
+    "build:storefront": "npm run build --workspace=storefront",
+    "build:dashboard": "npm run build --workspace=dashboard",
+    "lint": "eslint . --ext .ts,.tsx",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.3.4",
+    "@types/node": "^20.14.10",
+    "concurrently": "^10.0.5",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.4.1",
+    "typescript": "^5.6.3"
+  },
+  "packageManager": "npm@11.16.0",
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "unrs-resolver@1.12.2": true
+  }
+}
