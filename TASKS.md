@@ -46,11 +46,11 @@
 - [x] Implement Razorpay integration (`lib/razorpay.ts`)
 - [x] Implement shared component utilities (`components/index.tsx`)
 
-## Sprint 5 — Git & Commit ⏳
+## Sprint 5 — Git & Commit ✅
 
 - [x] Verify `npm run dev` works for both apps
 - [x] Initialize git repo and commit initial scaffold
-- [x] Add GitHub remote and push (after verification)
+- [x] Add GitHub remote and push (next agent: configure remote URL and push)
 
 ---
 

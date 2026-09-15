@@ -3,15 +3,224 @@
 @tailwind utilities;
 
 :root {
-  --background: #fbf8f2;
-  --foreground: #1a140c;
+  --background: #f7f4ef;
+  --foreground: #1c1b19;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-serif:
+    'Iowan Old Style', 'Baskerville', 'Times New Roman', Georgia, serif;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 160ms;
+  --duration-normal: 220ms;
+  --duration-slow: 300ms;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+@layer base {
+  * {
+    border-color: #ded6ca;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    selection-background-color: #dfc797;
+  }
+
+  ::selection {
+    background: #dfc797;
+    color: #1c1b19;
+  }
+
+  /* Focus visible accessibility */
+  :focus-visible {
+    outline: 2px solid #7b6032;
+    outline-offset: 3px;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #eee9e1;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #b8afa3;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #7b6032;
+  }
 }
 
-::selection {
-  background: #e8dcc8;
+/* Micro-interaction & Emil Design Engineering Rules */
+.btn-press {
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) ease,
+    color var(--duration-fast) ease;
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+/* Entry transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 280ms var(--ease-out) forwards;
+}
+
+.editorial-reveal {
+  animation: editorialReveal 700ms var(--ease-in-out) both;
+}
+
+@keyframes editorialReveal {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.eyebrow {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.display-title {
+  font-family: var(--font-serif);
+  font-size: clamp(3.3rem, 8vw, 7.8rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.88;
+}
+
+.editorial-rule {
+  border-top: 1px solid currentColor;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .image-lift:hover {
+    transform: scale(1.025);
+  }
+
+  .product-card:hover .product-card-image {
+    transform: scale(1.035);
+  }
+
+  .product-card:hover .product-card-secondary {
+    opacity: 1;
+  }
+
+  .product-card:hover .product-card-primary {
+    opacity: 0;
+  }
+}
+
+.product-card-image,
+.product-card-primary,
+.product-card-secondary {
+  transition:
+    transform 600ms var(--ease-out),
+    opacity 420ms ease;
+}
+
+.link-underline {
+  position: relative;
+  width: fit-content;
+}
+
+.link-underline::after {
+  background: currentColor;
+  bottom: -0.35rem;
+  content: '';
+  height: 1px;
+  left: 0;
+  position: absolute;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 220ms var(--ease-out);
+  width: 100%;
+}
+
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editorial-reveal,
+  .animate-fade-in-up {
+    animation: none;
+    clip-path: none;
+    opacity: 1;
+  }
+
+  .product-card-image,
+  .product-card-primary,
+  .product-card-secondary {
+    transition: opacity 160ms ease;
+    transform: none !important;
+  }
+}
+
+/* Stagger delay classes */
+.stagger-1 {
+  animation-delay: 40ms;
+}
+.stagger-2 {
+  animation-delay: 80ms;
+}
+.stagger-3 {
+  animation-delay: 120ms;
+}
+.stagger-4 {
+  animation-delay: 160ms;
+}
+.stagger-5 {
+  animation-delay: 200ms;
+}
+.stagger-6 {
+  animation-delay: 240ms;
+}
+
+/* Accessible reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

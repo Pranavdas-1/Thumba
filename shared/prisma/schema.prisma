@@ -8,15 +8,17 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   name      String
-  email     String   @unique
+  email     String     @unique
   image     String?
-  role      Role     @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  role      Role       @default(CUSTOMER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   orders    Order[]
   carts     Cart[]
+  reviews   Review[]
+  wishlist  Wishlist[]
 
   @@map("users")
 }
@@ -26,23 +28,83 @@ enum Role {
   ADMIN
 }
 
+model Collection {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  tagline     String?
+  description String?
+  image       String?
+  heroImage   String?
+  featured    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+
+  @@map("collections")
+}
+
 model Product {
-  id              String      @id @default(cuid())
-  slug            String      @unique
+  id              String           @id @default(cuid())
+  slug            String           @unique
   name            String
+  subtitle        String?
   description     String
+  story           String?
   price           Float
   discountedPrice Float?
   images          String[]
   category        Category
   material        String
   weight          String
-  inStock         Boolean     @default(true)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  dimensions      String?
+  inStock         Boolean          @default(true)
+  featured        Boolean          @default(false)
+  isNew           Boolean          @default(false)
+  rating          Float            @default(5.0)
+  reviewCount     Int              @default(0)
+  collectionId    String?
+  collection      Collection?      @relation(fields: [collectionId], references: [id])
+  variants        ProductVariant[]
+  reviews         Review[]
   orderItems      OrderItem[]
+  wishlistItems   WishlistItem[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   @@map("products")
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  sku       String?
+  price     Float?
+  inStock   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("product_variants")
+}
+
+model Review {
+  id               String   @id @default(cuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
+  author           String
+  rating           Int      @default(5)
+  title            String
+  comment          String
+  verifiedPurchase Boolean  @default(true)
+  location         String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("reviews")
 }
 
 enum Category {
@@ -82,14 +144,15 @@ enum OrderStatus {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id])
-  productId String
-  product   Product  @relation(fields: [productId], references: [id])
-  quantity  Int
-  price     Float
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  quantity    Int
+  price       Float
+  variantName String?
+  createdAt   DateTime @default(now())
 
   @@map("order_items")
 }
@@ -117,4 +180,27 @@ model Cart {
   updatedAt DateTime @updatedAt
 
   @@map("carts")
+}
+
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  items     WishlistItem[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  addedAt    DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+  @@map("wishlist_items")
 }

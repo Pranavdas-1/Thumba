@@ -1,1 +1,16 @@
 export { cn } from "@/lib/utils";
+export { Header } from "./Header";
+export { Footer } from "./Footer";
+export { ProductCard } from "./ProductCard";
+export { ProductGrid } from "./ProductGrid";
+export { ImageGallery } from "./ImageGallery";
+export { AddToCartButton } from "./AddToCartButton";
+export { WishlistButton } from "./WishlistButton";
+export { RatingStars } from "./RatingStars";
+export { QuickView } from "./QuickView";
+export { SearchOverlay } from "./SearchOverlay";
+export { MobileNav } from "./MobileNav";
+export { FilterChip } from "./FilterChip";
+export { FilterSidebar } from "./FilterSidebar";
+export { SortSelect } from "./SortSelect";
+export { ProductDetailInteractive } from "./ProductDetailInteractive";

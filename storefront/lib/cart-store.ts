@@ -7,9 +7,9 @@ import { displayPrice } from "./products";
 
 type CartState = {
   items: CartItem[];
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: Product, quantity?: number, variantName?: string) => void;
+  removeItem: (productId: string, variantName?: string) => void;
+  setQuantity: (productId: string, quantity: number, variantName?: string) => void;
   clear: () => void;
 };
 
@@ -17,47 +17,53 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (product, quantity = 1) => {
-        const existing = get().items.find((item) => item.productId === product.id);
-        if (existing) {
-          set({
-            items: get().items.map((item) =>
-              item.productId === product.id
-                ? { ...item, quantity: item.quantity + quantity }
-                : item,
-            ),
-          });
+      addItem: (product, quantity = 1, variantName) => {
+        const existingIndex = get().items.findIndex(
+          (item) => item.productId === product.id && item.variantName === variantName,
+        );
+
+        if (existingIndex > -1) {
+          const updated = [...get().items];
+          updated[existingIndex].quantity += quantity;
+          set({ items: updated });
           return;
         }
+
+        const price = displayPrice(product);
+        const newItem: CartItem = {
+          productId: product.id,
+          slug: product.slug,
+          name: product.name,
+          price,
+          quantity,
+          image: product.images[0] ?? "",
+          variantName,
+        };
+
+        set({ items: [...get().items, newItem] });
+      },
+      removeItem: (productId, variantName) => {
         set({
-          items: [
-            ...get().items,
-            {
-              productId: product.id,
-              slug: product.slug,
-              name: product.name,
-              price: displayPrice(product),
-              quantity,
-              image: product.images[0] ?? "",
-            },
-          ],
+          items: get().items.filter(
+            (item) => !(item.productId === productId && item.variantName === variantName),
+          ),
         });
       },
-      removeItem: (productId) =>
-        set({ items: get().items.filter((item) => item.productId !== productId) }),
-      setQuantity: (productId, quantity) => {
+      setQuantity: (productId, quantity, variantName) => {
         if (quantity < 1) {
-          get().removeItem(productId);
+          get().removeItem(productId, variantName);
           return;
         }
         set({
           items: get().items.map((item) =>
-            item.productId === productId ? { ...item, quantity } : item,
+            item.productId === productId && item.variantName === variantName
+              ? { ...item, quantity }
+              : item,
           ),
         });
       },
       clear: () => set({ items: [] }),
     }),
-    { name: "thumba-cart" },
+    { name: "thumba-cart-v2" },
   ),
 );
