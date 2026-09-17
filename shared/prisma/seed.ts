@@ -4,9 +4,9 @@ import { productImages, editorialImages } from "../../storefront/lib/image-libra
 
 const prisma = new PrismaClient();
 const outOfStockSlugs = new Set([
-  "chandra-signet-ring",
-  "amrita-baroque-lariat",
-  "tara-stud-earrings",
+  "nila-pearl-necklace",
+  "aruna-sculpted-hoops",
+  "soma-moon-pendant",
 ]);
 
 async function main() {

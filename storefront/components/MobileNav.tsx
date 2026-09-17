@@ -7,7 +7,7 @@ import { Menu, X, ShoppingBag, ArrowRight } from 'lucide-react';
 import { CATEGORY_LABELS, BRAND } from '@thumba/shared';
 import { useCartStore } from '@/lib/cart-store';
 
-export function MobileNav() {
+export function MobileNav({ overlay = false }: { overlay?: boolean }) {
   const [open, setOpen] = useState(false);
   const cartCount = useCartStore((state) =>
     state.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -19,7 +19,7 @@ export function MobileNav() {
         <button
           type="button"
           aria-label="Open mobile menu"
-          className="flex h-10 w-10 items-center justify-center text-ink-800 transition-colors hover:bg-ivory-100 md:hidden active:scale-95"
+          className={`flex h-10 w-10 items-center justify-center transition-colors md:hidden active:scale-95 ${overlay ? 'text-ivory-50 hover:bg-white/10' : 'text-ink-800 hover:bg-ivory-100'}`}
         >
           <Menu className="h-5 w-5" />
         </button>

@@ -7,6 +7,13 @@ import { editorialImages } from '@/lib/image-library';
 
 export const dynamic = 'force-dynamic';
 
+const collectionImages: Record<string, string> = {
+  'timeless-gold': editorialImages.collections.gold,
+  'the-pearl-edit': editorialImages.collections.pearl,
+  'silver-moon': editorialImages.collections.silver,
+  heritage: editorialImages.collections.heritage,
+};
+
 export default async function HomePage() {
   const [products, collections] = await Promise.all([
     getProducts(),
@@ -17,70 +24,65 @@ export default async function HomePage() {
 
   return (
     <main className="bg-ivory-50">
-      <section className="mx-auto max-w-[1600px] px-4 pb-4 pt-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:relative lg:aspect-[16/9]">
-          <div className="z-20 flex flex-col justify-between bg-ink-900 px-7 py-9 text-ivory-50 sm:px-12 sm:py-12 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[43%] lg:px-12 lg:py-10 xl:px-16 xl:py-14">
-            <div className="flex items-center justify-between text-gold-300">
-              <p className="eyebrow">Thumba / 01</p>
-              <p className="text-[10px] uppercase tracking-[0.22em] text-ivory-400">
-                Autumn 2026
-              </p>
-            </div>
+      <section className="relative isolate min-h-[760px] overflow-hidden bg-ink-900 text-ivory-50 lg:min-h-[100svh]">
+        <Image
+          src={editorialImages.hero}
+          alt="A sculptural gold necklace from the Thumba atelier"
+          fill
+          priority
+          className="object-cover object-center brightness-[0.55] contrast-125"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-900/85 via-ink-900/45 to-ink-900/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-900 via-ink-900/10 to-ink-900/25" />
 
-            <div className="my-16 max-w-xl lg:my-10">
-              <p className="eyebrow text-gold-300">Fine jewelry, made slowly</p>
-              <h1 className="display-title mt-7 text-ivory-50">
-                Objects
-                <br />
-                with a pulse.
-              </h1>
-              <p className="mt-8 max-w-md text-sm leading-7 text-ivory-300 sm:text-base">
-                Sculptural pieces in gold, luminous pearls, and silver with a
-                quiet point of view. Made to become part of your every day.
-              </p>
-              <div className="mt-10 flex flex-wrap items-center gap-5">
-                <Link
-                  href="/shop"
-                  className="btn-press inline-flex items-center gap-4 border border-gold-300 bg-gold-300 px-6 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-ink-900 hover:bg-gold-200"
-                >
-                  Enter the atelier
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="/collections"
-                  className="link-underline text-xs uppercase tracking-[0.16em] text-ivory-200 hover:text-white"
-                >
-                  View collections
-                </Link>
-              </div>
-            </div>
-
-            <div className="flex items-end justify-between border-t border-ivory-700 pt-5 text-[10px] uppercase tracking-[0.18em] text-ivory-400">
-              <span>Fine jewelry, quietly considered</span>
-              <span>01 — 04</span>
-            </div>
+        <div className="relative mx-auto flex min-h-[760px] max-w-7xl flex-col justify-end px-4 pb-36 pt-32 sm:px-6 lg:min-h-[100svh] lg:px-8">
+          <div className="relative max-w-2xl">
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 180 180"
+              className="pointer-events-none absolute -left-10 -top-16 h-44 w-44 text-gold-200/45 sm:-left-14 sm:-top-20 sm:h-56 sm:w-56"
+              fill="none"
+            >
+              <circle cx="90" cy="90" r="61" stroke="currentColor" strokeWidth="0.8" />
+              <circle cx="90" cy="90" r="42" stroke="currentColor" strokeDasharray="2 6" strokeWidth="0.8" />
+              <path d="M90 8v164M8 90h164" stroke="currentColor" strokeWidth="0.8" />
+              <path d="M90 24v12M90 144v12M24 90h12M144 90h12" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            <p className="eyebrow relative text-gold-200">Fine jewelry, made slowly</p>
+            <h1 className="display-title relative mt-6 max-w-xl text-ivory-50">Objects with a pulse.</h1>
+            <p className="relative mt-7 max-w-lg text-sm leading-7 text-ivory-200 sm:text-base">
+              Sculptural pieces in gold, luminous pearls, and silver with a
+              quiet point of view. Made to become part of your every day.
+            </p>
+            <Link
+              href="/shop"
+              className="btn-press relative mt-9 inline-flex items-center gap-4 border border-gold-300 bg-gold-300 px-6 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-ink-900 hover:bg-gold-200"
+            >
+              Enter the atelier
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
+        </div>
 
-          <div className="group relative aspect-[16/9] overflow-hidden bg-ivory-200 lg:absolute lg:inset-0 lg:aspect-auto">
-            <Image
-              src={editorialImages.hero}
-              alt="A sculptural gold necklace from the Thumba atelier"
-              fill
-              priority
-              className="image-lift object-cover object-center"
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-ink-900/10" />
-            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between border-t border-ivory-50/50 bg-ink-900/35 px-6 py-5 text-ivory-50 backdrop-blur-sm sm:px-8 lg:left-[43%]">
-              <div>
-                <p className="eyebrow text-gold-200">The Nila pearl necklace</p>
-                <p className="mt-2 font-serif text-xl">
-                  A soft glimmer, held close.
-                </p>
-              </div>
-              <span className="text-xs uppercase tracking-[0.16em] text-ivory-200">
-                01 / 04
-              </span>
+        <div className="absolute bottom-24 left-1/2 flex -translate-x-1/2 flex-col items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-ivory-300">
+          <span>Scroll to explore</span>
+          <span className="h-8 w-px bg-gold-300/70" />
+        </div>
+
+        <div className="absolute inset-x-0 bottom-0 border-t border-ivory-50/20 bg-ink-900/40 backdrop-blur-sm">
+          <div className="mx-auto grid max-w-7xl grid-cols-3 divide-x divide-ivory-50/20 px-4 sm:px-6 lg:px-8">
+            <div className="py-4 pr-3 sm:py-5">
+              <p className="text-[9px] uppercase tracking-[0.16em] text-ivory-400 sm:text-[10px]">Material</p>
+              <p className="mt-1 text-xs text-ivory-100 sm:text-sm">18k gold &amp; sterling silver</p>
+            </div>
+            <div className="px-3 py-4 sm:px-6 sm:py-5">
+              <p className="text-[9px] uppercase tracking-[0.16em] text-ivory-400 sm:text-[10px]">Starting price</p>
+              <p className="mt-1 text-xs text-ivory-100 sm:text-sm">₹4,600</p>
+            </div>
+            <div className="py-4 pl-3 sm:py-5 sm:pl-6">
+              <p className="text-[9px] uppercase tracking-[0.16em] text-ivory-400 sm:text-[10px]">Pieces available</p>
+              <p className="mt-1 text-xs text-ivory-100 sm:text-sm">{products.length} considered pieces</p>
             </div>
           </div>
         </div>
@@ -105,45 +107,31 @@ export default async function HomePage() {
           <div className="flex flex-col justify-between gap-6 border-b border-ivory-700 pb-8 sm:flex-row sm:items-end">
             <div>
               <p className="eyebrow text-gold-300">Curated by material</p>
-              <h2 className="mt-4 font-serif text-4xl tracking-[-0.04em] sm:text-6xl">
-                Find your element.
-              </h2>
+              <h2 className="mt-4 font-serif text-4xl tracking-[-0.04em] sm:text-6xl">Find your element.</h2>
             </div>
-            <p className="max-w-xs text-sm leading-6 text-ivory-300">
-              Four distinct moods, one point of view: jewelry that gets better
-              with wear.
-            </p>
+            <p className="max-w-xs text-sm leading-6 text-ivory-300">Four distinct moods, one point of view: jewelry that gets better with wear.</p>
           </div>
 
           <div className="mt-8 grid grid-cols-1 divide-y divide-ivory-700 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            {collections.map((collection, index) => (
-              <Link
-                key={collection.id}
-                href={`/collections/${collection.slug}`}
-                className={`group relative grid min-h-[22rem] grid-cols-[4.5rem_1fr] items-end overflow-hidden p-5 sm:min-h-[26rem] sm:p-7 ${index > 1 ? 'border-t border-ivory-700' : ''}`}
-              >
-                <span className="self-start pt-1 font-serif text-2xl text-gold-300">
-                  0{index + 1}
-                </span>
-                <Image
-                  src={collection.image}
-                  alt=""
-                  fill
-                  className="-z-10 object-cover opacity-45 transition-transform duration-700 ease-out-cubic group-hover:scale-105"
-                  sizes="(min-width: 640px) 50vw, 100vw"
-                />
-                <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-900 via-ink-900/20 to-transparent" />
-                <div className="relative col-start-2">
-                  <p className="eyebrow text-gold-300">{collection.tagline}</p>
-                  <h3 className="mt-3 font-serif text-3xl tracking-[-0.03em] text-ivory-50 sm:text-4xl">
-                    {collection.name}
-                  </h3>
-                  <span className="mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-ivory-200 transition-colors group-hover:text-gold-200">
-                    Explore edit <ArrowRight className="h-3.5 w-3.5" />
-                  </span>
-                </div>
-              </Link>
-            ))}
+            {collections.map((collection, index) => {
+              const image = collectionImages[collection.slug] || collection.heroImage || collection.image || editorialImages.collections.heritage;
+              return (
+                <Link
+                  key={collection.id}
+                  href={`/collections/${collection.slug}`}
+                  className={`group relative grid min-h-[22rem] grid-cols-[4.5rem_1fr] items-end overflow-hidden p-5 sm:min-h-[26rem] sm:p-7 ${index > 1 ? 'border-t border-ivory-700' : ''}`}
+                >
+                  <span className="self-start pt-1 font-serif text-2xl text-gold-300">0{index + 1}</span>
+                  <Image src={image} alt="" fill className="-z-10 object-cover opacity-45 transition-transform duration-700 ease-out-cubic group-hover:scale-105" sizes="(min-width: 640px) 50vw, 100vw" />
+                  <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-900 via-ink-900/20 to-transparent" />
+                  <div className="relative col-start-2">
+                    <p className="eyebrow text-gold-300">{collection.tagline}</p>
+                    <h3 className="mt-3 font-serif text-3xl tracking-[-0.03em] text-ivory-50 sm:text-4xl">{collection.name}</h3>
+                    <span className="mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-ivory-200 transition-colors group-hover:text-gold-200">Explore edit <ArrowRight className="h-3.5 w-3.5" /></span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

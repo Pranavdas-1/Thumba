@@ -16,11 +16,20 @@ import {
   DEFAULT_PRICES,
 } from '@thumba/shared';
 import { useCartStore } from '@/lib/cart-store';
+import { TrustBadges } from '@/components/TrustBadges';
 
 type RazorpaySuccess = {
   razorpay_payment_id: string;
   razorpay_order_id: string;
 };
+
+type CheckoutField = 'name' | 'email' | 'street' | 'city' | 'state' | 'zipCode';
+type FieldErrors = Partial<Record<CheckoutField, string>>;
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return <p id={id} className="mt-1 text-xs text-red-700">{message}</p>;
+}
 
 declare global {
   interface Window {
@@ -52,6 +61,7 @@ export default function CheckoutPage() {
     'idle',
   );
   const [message, setMessage] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [paymentDetails, setPaymentDetails] = useState<RazorpaySuccess | null>(
     null,
   );
@@ -70,8 +80,7 @@ export default function CheckoutPage() {
 
   const subtotal = cartTotal(items);
   const tax = calculateTax(subtotal, DEFAULT_PRICES.TAX_RATE);
-  const isFreeShipping = subtotal >= BRAND.freeShippingThreshold;
-  const shippingFee = isFreeShipping ? 0 : DEFAULT_PRICES.SHIPPING_FEE;
+  const shippingFee = DEFAULT_PRICES.SHIPPING_FEE;
   const grandTotal = subtotal + tax + shippingFee;
 
   if (items.length === 0 && status !== 'paid') {
@@ -144,18 +153,51 @@ export default function CheckoutPage() {
     );
   }
 
+  function clearFieldError(field: CheckoutField) {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus('paying');
     setMessage('');
 
     const form = new FormData(event.currentTarget);
+    const values = {
+      name: String(form.get('name') || '').trim(),
+      email: String(form.get('email') || '').trim(),
+      street: String(form.get('street') || '').trim(),
+      city: String(form.get('city') || '').trim(),
+      state: String(form.get('state') || '').trim(),
+      zipCode: String(form.get('zipCode') || '').trim(),
+      phone: String(form.get('phone') || '').trim(),
+    };
+    const errors: FieldErrors = {};
+    if (!values.name) errors.name = 'This field is required';
+    if (!values.email) errors.email = 'This field is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) errors.email = 'Please enter a valid email address';
+    if (!values.street) errors.street = 'This field is required';
+    if (!values.city) errors.city = 'This field is required';
+    if (!values.state) errors.state = 'This field is required';
+    if (!values.zipCode) errors.zipCode = 'This field is required';
+    else if (!/^\d{6}$/.test(values.zipCode)) errors.zipCode = 'Please enter a valid PIN code';
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setStatus('idle');
+      return;
+    }
+
+    setStatus('paying');
     const shipping = {
-      street: String(form.get('street') || ''),
-      city: String(form.get('city') || ''),
-      state: String(form.get('state') || ''),
-      country: String(form.get('country') || 'India'),
-      zipCode: String(form.get('zipCode') || ''),
+      street: values.street,
+      city: values.city,
+      state: values.state,
+      zipCode: values.zipCode,
     };
 
     try {
@@ -191,8 +233,8 @@ export default function CheckoutPage() {
                 razorpayOrderId: payment.razorpay_order_id,
                 paymentId: payment.razorpay_payment_id,
                 customer: {
-                  name: String(form.get('name') || ''),
-                  email: String(form.get('email') || ''),
+                  name: values.name,
+                  email: values.email,
                 },
                 items: items.map((item) => ({
                   productId: item.productId,
@@ -219,9 +261,9 @@ export default function CheckoutPage() {
           },
         },
         prefill: {
-          name: String(form.get('name') || ''),
-          email: String(form.get('email') || ''),
-          contact: String(form.get('phone') || ''),
+          name: values.name,
+          email: values.email,
+          contact: values.phone,
         },
         theme: {
           color: '#171412',
@@ -257,7 +299,7 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
         {/* Left Column (7 cols): Checkout Form */}
         <div className="lg:col-span-7">
-          <form onSubmit={onSubmit} className="space-y-8">
+          <form onSubmit={onSubmit} noValidate className="space-y-8">
             {/* Contact Information */}
             <div className="border-y border-ivory-200 bg-white p-6 sm:p-8">
               <h2 className="font-serif text-xl font-semibold text-ink-900">
@@ -271,10 +313,13 @@ export default function CheckoutPage() {
                   <input
                     name="name"
                     type="text"
-                    required
                     placeholder="e.g. Priya Sharma"
-                    className="mt-1 w-full border-b border-ivory-300 bg-transparent px-0 py-3 text-xs text-ink-900 focus:border-gold-600 focus:outline-none"
+                    aria-invalid={Boolean(fieldErrors.name)}
+                    aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+                    onChange={() => clearFieldError('name')}
+                    className={`mt-1 w-full border-b bg-transparent px-0 py-3 text-xs text-ink-900 focus:border-gold-600 focus:outline-none ${fieldErrors.name ? 'border-red-500' : 'border-ivory-300'}`}
                   />
+                  <FieldError id="name-error" message={fieldErrors.name} />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-ink-700">
@@ -283,10 +328,13 @@ export default function CheckoutPage() {
                   <input
                     name="email"
                     type="email"
-                    required
                     placeholder="priya@example.com"
-                    className="mt-1 w-full rounded-xl border border-ivory-300 bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none"
+                    aria-invalid={Boolean(fieldErrors.email)}
+                    aria-describedby={fieldErrors.email ? 'email-error' : undefined}
+                    onChange={() => clearFieldError('email')}
+                    className={`mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none ${fieldErrors.email ? 'border-red-500' : 'border-ivory-300'}`}
                   />
+                  <FieldError id="email-error" message={fieldErrors.email} />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-ink-700">
@@ -307,6 +355,9 @@ export default function CheckoutPage() {
               <h2 className="font-serif text-xl font-semibold text-ink-900">
                 2. Delivery Address
               </h2>
+              <p className="mt-2 text-xs leading-5 text-ink-500">
+                Delivery is available within India only. No international shipping.
+              </p>
               <div className="mt-4 space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-ink-700">
@@ -315,10 +366,13 @@ export default function CheckoutPage() {
                   <input
                     name="street"
                     type="text"
-                    required
                     placeholder="42, 5th Cross, Lavelle Road"
-                    className="mt-1 w-full border-b border-ivory-300 bg-transparent px-0 py-3 text-xs text-ink-900 focus:border-gold-600 focus:outline-none"
+                    aria-invalid={Boolean(fieldErrors.street)}
+                    aria-describedby={fieldErrors.street ? 'street-error' : undefined}
+                    onChange={() => clearFieldError('street')}
+                    className={`mt-1 w-full border-b bg-transparent px-0 py-3 text-xs text-ink-900 focus:border-gold-600 focus:outline-none ${fieldErrors.street ? 'border-red-500' : 'border-ivory-300'}`}
                   />
+                  <FieldError id="street-error" message={fieldErrors.street} />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -329,10 +383,13 @@ export default function CheckoutPage() {
                     <input
                       name="city"
                       type="text"
-                      required
-                      placeholder="Bengaluru"
-                      className="mt-1 w-full rounded-xl border border-ivory-300 bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none"
-                    />
+                       placeholder="Bengaluru"
+                       aria-invalid={Boolean(fieldErrors.city)}
+                       aria-describedby={fieldErrors.city ? 'city-error' : undefined}
+                       onChange={() => clearFieldError('city')}
+                       className={`mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none ${fieldErrors.city ? 'border-red-500' : 'border-ivory-300'}`}
+                     />
+                     <FieldError id="city-error" message={fieldErrors.city} />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-ink-700">
@@ -341,10 +398,13 @@ export default function CheckoutPage() {
                     <input
                       name="state"
                       type="text"
-                      required
-                      placeholder="Karnataka"
-                      className="mt-1 w-full rounded-xl border border-ivory-300 bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none"
-                    />
+                       placeholder="Karnataka"
+                       aria-invalid={Boolean(fieldErrors.state)}
+                       aria-describedby={fieldErrors.state ? 'state-error' : undefined}
+                       onChange={() => clearFieldError('state')}
+                       className={`mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none ${fieldErrors.state ? 'border-red-500' : 'border-ivory-300'}`}
+                     />
+                     <FieldError id="state-error" message={fieldErrors.state} />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-xs font-medium text-ink-700">
@@ -353,25 +413,16 @@ export default function CheckoutPage() {
                     <input
                       name="zipCode"
                       type="text"
-                      required
-                      placeholder="560001"
-                      className="mt-1 w-full rounded-xl border border-ivory-300 bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none"
-                    />
+                       placeholder="560001"
+                       aria-invalid={Boolean(fieldErrors.zipCode)}
+                       aria-describedby={fieldErrors.zipCode ? 'zipCode-error' : undefined}
+                       onChange={() => clearFieldError('zipCode')}
+                       className={`mt-1 w-full rounded-xl border bg-white px-3.5 py-2.5 text-xs text-ink-900 shadow-sm focus:border-gold-600 focus:outline-none ${fieldErrors.zipCode ? 'border-red-500' : 'border-ivory-300'}`}
+                     />
+                     <FieldError id="zipCode-error" message={fieldErrors.zipCode} />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-ink-700">
-                    Country
-                  </label>
-                  <input
-                    name="country"
-                    type="text"
-                    defaultValue="India"
-                    readOnly
-                    className="mt-1 w-full border-b border-ivory-200 bg-ivory-50 px-0 py-3 text-xs text-ink-700 cursor-not-allowed"
-                  />
-                </div>
               </div>
             </div>
 
@@ -454,7 +505,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between text-ink-600">
                 <dt>Delivery</dt>
-                <dd className="font-medium text-gold-700">Complimentary</dd>
+                <dd className="font-medium text-gold-700">{formatCurrency(shippingFee)}</dd>
               </div>
             </dl>
 
@@ -476,6 +527,10 @@ export default function CheckoutPage() {
                 Uses Razorpay test keys from the workspace environment.
               </p>
             </div>
+            <p className="mt-4 text-center text-[11px] leading-5 text-ink-500">
+              Delivery is available within India only. No international shipping.
+            </p>
+            <TrustBadges className="mt-5" />
           </aside>
         </div>
       </div>

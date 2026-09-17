@@ -15,7 +15,6 @@ const bodySchema = z.object({
     street: z.string().min(1),
     city: z.string().min(1),
     state: z.string().min(1),
-    country: z.string().min(1),
     zipCode: z.string().min(1),
   }),
 });
@@ -58,7 +57,7 @@ export async function POST(request: Request) {
           status: "PENDING",
           paymentId: parsed.data.paymentId,
           razorpayOrderId: parsed.data.razorpayOrderId,
-          shippingAddress: { create: parsed.data.shipping },
+          shippingAddress: { create: { ...parsed.data.shipping, country: "India" } },
           items: {
             create: lineItems.map(({ product, quantity, price }) => ({
               product: { connect: { id: product.id } },

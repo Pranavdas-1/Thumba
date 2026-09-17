@@ -8,7 +8,6 @@ import {
   cartTotal,
   formatCurrency,
   calculateTax,
-  BRAND,
   DEFAULT_PRICES,
 } from '@thumba/shared';
 import { useCartStore } from '@/lib/cart-store';
@@ -33,8 +32,7 @@ export default function CartPage() {
 
   const subtotal = cartTotal(items);
   const tax = calculateTax(subtotal, DEFAULT_PRICES.TAX_RATE);
-  const isFreeShipping = subtotal >= BRAND.freeShippingThreshold;
-  const shippingFee = isFreeShipping ? 0 : DEFAULT_PRICES.SHIPPING_FEE;
+  const shippingFee = DEFAULT_PRICES.SHIPPING_FEE;
   const grandTotal = subtotal + tax + shippingFee;
 
   if (items.length === 0) {
@@ -207,9 +205,7 @@ export default function CartPage() {
               <div className="flex justify-between text-ink-600">
                 <dt>Delivery</dt>
                 <dd className="font-medium text-gold-700">
-                  {isFreeShipping
-                    ? 'Complimentary'
-                    : formatCurrency(shippingFee)}
+                  {formatCurrency(shippingFee)}
                 </dd>
               </div>
             </dl>
@@ -233,6 +229,9 @@ export default function CartPage() {
 
             <p className="mt-6 text-center text-xs text-ink-500">
               Payment is handled securely by Razorpay.
+            </p>
+            <p className="mt-2 text-center text-[11px] leading-5 text-ink-500">
+              Delivery is available within India only. No international shipping.
             </p>
           </div>
         </div>

@@ -5,7 +5,6 @@ export const BRAND = {
     "Fine jewelry in gold, silver, pearls, and stones. Sculptural pieces with a quiet point of view.",
   currency: "INR",
   currencySymbol: "₹",
-  freeShippingThreshold: 5000,
   supportEmail: "Thumbacollections@gmail.com",
   phone: "+91 (0) 80 4912 8800",
   address: "Studio Thumba, Indiranagar, Bengaluru 560038",
@@ -21,7 +20,7 @@ export const RAZORPAY_ORDER_STATUS = {
 } as const;
 
 export const DEFAULT_PRICES = {
-  SHIPPING_FEE: 0,
+  SHIPPING_FEE: 70,
   EXPRESS_SHIPPING_FEE: 450,
   TAX_RATE: 0.03, // 3% GST on fine jewelry in India
 } as const;
