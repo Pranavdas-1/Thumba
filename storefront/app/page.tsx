@@ -24,7 +24,7 @@ export default async function HomePage() {
 
   return (
     <main className="bg-ivory-50">
-      <section className="relative isolate min-h-[760px] overflow-hidden bg-ink-900 text-ivory-50 lg:min-h-[100svh]">
+      <section className="relative isolate min-h-[680px] overflow-hidden bg-ink-900 text-ivory-50 sm:min-h-[760px] lg:min-h-[100svh]">
         <Image
           src={editorialImages.hero}
           alt="A sculptural gold necklace from the Thumba atelier"
@@ -36,7 +36,7 @@ export default async function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-r from-ink-900/85 via-ink-900/45 to-ink-900/20" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-900 via-ink-900/10 to-ink-900/25" />
 
-        <div className="relative mx-auto flex min-h-[760px] max-w-7xl flex-col justify-end px-4 pb-36 pt-32 sm:px-6 lg:min-h-[100svh] lg:px-8">
+        <div className="relative mx-auto flex min-h-[680px] max-w-7xl flex-col justify-end px-4 pb-28 pt-28 sm:min-h-[760px] sm:px-6 sm:pb-36 sm:pt-32 lg:min-h-[100svh] lg:px-8">
           <div className="relative max-w-2xl">
             <svg
               aria-hidden="true"
@@ -71,18 +71,10 @@ export default async function HomePage() {
         </div>
 
         <div className="absolute inset-x-0 bottom-0 border-t border-ivory-50/20 bg-ink-900/40 backdrop-blur-sm">
-          <div className="mx-auto grid max-w-7xl grid-cols-3 divide-x divide-ivory-50/20 px-4 sm:px-6 lg:px-8">
-            <div className="py-4 pr-3 sm:py-5">
-              <p className="text-[9px] uppercase tracking-[0.16em] text-ivory-400 sm:text-[10px]">Material</p>
-              <p className="mt-1 text-xs text-ivory-100 sm:text-sm">18k gold &amp; sterling silver</p>
-            </div>
-            <div className="px-3 py-4 sm:px-6 sm:py-5">
+          <div className="mx-auto flex max-w-7xl justify-center px-4 sm:px-6 lg:px-8">
+            <div className="py-4 text-center sm:py-5">
               <p className="text-[9px] uppercase tracking-[0.16em] text-ivory-400 sm:text-[10px]">Starting price</p>
               <p className="mt-1 text-xs text-ivory-100 sm:text-sm">₹4,600</p>
-            </div>
-            <div className="py-4 pl-3 sm:py-5 sm:pl-6">
-              <p className="text-[9px] uppercase tracking-[0.16em] text-ivory-400 sm:text-[10px]">Pieces available</p>
-              <p className="mt-1 text-xs text-ivory-100 sm:text-sm">{products.length} considered pieces</p>
             </div>
           </div>
         </div>
@@ -102,7 +94,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-ink-900 py-24 text-ivory-50 sm:py-32">
+      <section className="bg-ink-900 py-16 text-ivory-50 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col justify-between gap-6 border-b border-ivory-700 pb-8 sm:flex-row sm:items-end">
             <div>
@@ -112,19 +104,19 @@ export default async function HomePage() {
             <p className="max-w-xs text-sm leading-6 text-ivory-300">Four distinct moods, one point of view: jewelry that gets better with wear.</p>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 divide-y divide-ivory-700 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+          <div className="mt-6 grid grid-cols-1 divide-y divide-ivory-700 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
             {collections.map((collection, index) => {
               const image = collectionImages[collection.slug] || collection.heroImage || collection.image || editorialImages.collections.heritage;
               return (
                 <Link
                   key={collection.id}
                   href={`/collections/${collection.slug}`}
-                  className={`group relative grid min-h-[22rem] grid-cols-[4.5rem_1fr] items-end overflow-hidden p-5 sm:min-h-[26rem] sm:p-7 ${index > 1 ? 'border-t border-ivory-700' : ''}`}
+                  className={`group relative isolate grid min-h-[16rem] grid-cols-[3.5rem_1fr] items-end overflow-hidden p-4 sm:min-h-[19rem] sm:grid-cols-[4.5rem_1fr] sm:p-6 ${index > 1 ? 'border-t border-ivory-700' : ''}`}
                 >
                   <span className="self-start pt-1 font-serif text-2xl text-gold-300">0{index + 1}</span>
-                  <Image src={image} alt="" fill className="-z-10 object-cover opacity-45 transition-transform duration-700 ease-out-cubic group-hover:scale-105" sizes="(min-width: 640px) 50vw, 100vw" />
-                  <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink-900 via-ink-900/20 to-transparent" />
-                  <div className="relative col-start-2">
+                  <Image src={image} alt="" fill className="z-0 object-cover opacity-45 transition-transform duration-700 ease-out-cubic group-hover:scale-105" sizes="(min-width: 640px) 50vw, 100vw" />
+                  <div className="absolute inset-0 z-10 bg-gradient-to-t from-ink-900 via-ink-900/20 to-transparent" />
+                  <div className="relative z-20 col-start-2">
                     <p className="eyebrow text-gold-300">{collection.tagline}</p>
                     <h3 className="mt-3 font-serif text-3xl tracking-[-0.03em] text-ivory-50 sm:text-4xl">{collection.name}</h3>
                     <span className="mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-ivory-200 transition-colors group-hover:text-gold-200">Explore edit <ArrowRight className="h-3.5 w-3.5" /></span>

@@ -10,7 +10,7 @@ import { displayPrice } from '@/lib/products';
 
 export function ProductDetailInteractive({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
-  const [openSection, setOpenSection] = useState<string | null>('details');
+  const [openSection, setOpenSection] = useState<string | null>(null);
 
 
   const toggleSection = (id: string) => {
@@ -97,47 +97,6 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
 
       {/* Accordion sections */}
       <div className="mt-8 divide-y divide-ivory-200 border-t border-ivory-200">
-        {/* Material details */}
-        <div className="py-4">
-          <button
-            type="button"
-            onClick={() => toggleSection('details')}
-            className="flex w-full items-center justify-between text-left font-serif text-lg font-medium text-ink-900"
-          >
-            <span>Material & specifications</span>
-            <ChevronDown
-              className={`h-4 w-4 text-ink-500 transition-transform duration-200 ${
-                openSection === 'details' ? 'rotate-180' : ''
-              }`}
-            />
-          </button>
-          {openSection === 'details' && (
-            <div className="mt-3 space-y-2 text-xs leading-relaxed text-ink-600">
-              <p>
-                <strong className="text-ink-900">Material:</strong>{' '}
-                {product.material}
-              </p>
-              <p>
-                <strong className="text-ink-900">Approximate Weight:</strong>{' '}
-                {product.weight}
-              </p>
-              {product.dimensions && (
-                <p>
-                  <strong className="text-ink-900">Dimensions:</strong>{' '}
-                  {product.dimensions}
-                </p>
-              )}
-              {product.details && product.details.length > 0 && (
-                <ul className="mt-2 list-inside list-disc space-y-1 text-ink-700">
-                  {product.details.map((d, i) => (
-                    <li key={i}>{d}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Care instructions */}
         <div className="py-4">
           <button
