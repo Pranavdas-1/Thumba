@@ -5,7 +5,6 @@ import { productImages, editorialImages } from "../../storefront/lib/image-libra
 const prisma = new PrismaClient();
 const outOfStockSlugs = new Set([
   "nila-pearl-necklace",
-  "aruna-sculpted-hoops",
   "soma-moon-pendant",
 ]);
 

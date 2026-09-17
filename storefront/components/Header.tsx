@@ -18,6 +18,7 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -29,7 +30,7 @@ export function Header() {
 
   return (
     <header
-      className={`${isHome ? 'absolute inset-x-0 top-0' : 'sticky top-0'} z-40 w-full border-b transition-[background-color,box-shadow] duration-250 ease-out-cubic ${isHome ? (scrolled ? 'border-ivory-50/20 bg-ink-900/35 backdrop-blur-md' : 'border-transparent bg-transparent') : (scrolled ? 'border-ivory-200 bg-ivory-50/95 shadow-[0_10px_30px_rgba(33,30,26,0.06)] backdrop-blur-md' : 'border-ivory-200/70 bg-ivory-50/90 backdrop-blur-sm')}`}
+      className={`${isHome ? 'fixed inset-x-0 top-0' : 'sticky top-0'} z-[60] w-full border-b transition-[background-color,box-shadow] duration-250 ease-out-cubic ${isHome ? (scrolled ? 'border-ivory-50/20 bg-ink-900/90 shadow-[0_10px_30px_rgba(0,0,0,0.22)] backdrop-blur-md' : 'border-transparent bg-transparent') : (scrolled ? 'border-ivory-200 bg-ivory-50/95 shadow-[0_10px_30px_rgba(33,30,26,0.06)] backdrop-blur-md' : 'border-ivory-200/70 bg-ivory-50/90 backdrop-blur-sm')}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-1 px-4 py-3.5 sm:gap-5 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-8">
