@@ -1,52 +1,42 @@
-import type { Collection, Product, Review } from "@thumba/shared";
+import type { Collection, Product } from "@thumba/shared";
 import {
-  catalog,
-  collections as catalogCollections,
-  reviews,
-  displayPrice,
-  getReviewsForProduct,
-  searchProducts as searchCatalog,
-  sortProducts,
-} from "@thumba/shared";
-import { editorialImages, productImages } from './image-library';
-
-export const products: Product[] = catalog.map((product, index) => ({
-  ...product,
-  images: productImages(index),
-}));
-
-export const collections: Collection[] = catalogCollections.map((collection) => {
-  const image =
-    collection.slug === 'timeless-gold'
-      ? editorialImages.collections.gold
-      : collection.slug === 'the-pearl-edit'
-        ? editorialImages.collections.pearl
-        : collection.slug === 'silver-moon'
-          ? editorialImages.collections.silver
-          : editorialImages.collections.heritage;
-
-  return { ...collection, image, heroImage: image };
-});
-
-export const getProductBySlug = (slug: string) =>
-  products.find((product) => product.slug === slug);
-
-export const getCollectionBySlug = (slug: string) =>
-  collections.find((collection) => collection.slug === slug);
-
-export const getProductsByCategory = (category: Product['category']) =>
-  products.filter((product) => product.category === category);
-
-export const getProductsByCollection = (collectionSlug: string) =>
-  products.filter((product) => product.collectionSlug === collectionSlug);
-
-export const searchProducts = (items: Product[], query: string) =>
-  searchCatalog(items, query);
+  findCollectionBySlug,
+  findProductBySlug,
+  listCollections,
+  listProducts,
+  listProductsByCategory,
+  listProductsByCollection,
+} from "@thumba/shared/db";
+import { displayPrice, sortProducts } from "@thumba/shared";
 
 export {
-  reviews,
   displayPrice,
-  getReviewsForProduct,
   sortProducts,
 };
-export type { Collection, Product, Review };
+export type { Collection, Product };
+
+const isAvailable = (product: Product) =>
+  product.inStock && (product.stock ?? 0) > 0;
+
+export async function getProducts(options?: { search?: string }) {
+  const products = (await listProducts()).filter(isAvailable);
+  const query = options?.search?.trim().toLowerCase();
+  if (!query) return products;
+
+  return products.filter((product) =>
+    [product.name, product.description, product.material, product.category, product.subtitle]
+      .filter(Boolean)
+      .some((value) => value!.toLowerCase().includes(query)),
+  );
+}
+export const getCollections = listCollections;
+export const getProductBySlug = findProductBySlug;
+export const getCollectionBySlug = findCollectionBySlug;
+
+export async function getProductsByCategory(category: string) {
+  return (await listProductsByCategory(category)).filter(isAvailable);
+}
+
+export async function getProductsByCollection(collectionSlug: string) {
+  return (await listProductsByCollection(collectionSlug)).filter(isAvailable);
+}

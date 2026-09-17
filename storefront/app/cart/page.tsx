@@ -3,13 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Trash2,
-  Heart,
-  ArrowRight,
-  ShoppingBag,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import { Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
 import {
   cartTotal,
   formatCurrency,
@@ -18,15 +12,12 @@ import {
   DEFAULT_PRICES,
 } from '@thumba/shared';
 import { useCartStore } from '@/lib/cart-store';
-import { useWishlistStore } from '@/lib/wishlist-store';
-import { products } from '@/lib/products';
 
 export default function CartPage() {
   const [mounted, setMounted] = useState(false);
   const items = useCartStore((state) => state.items);
   const setQuantity = useCartStore((state) => state.setQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
-  const addItemToWishlist = useWishlistStore((state) => state.addItem);
 
   useEffect(() => {
     setMounted(true);
@@ -46,15 +37,6 @@ export default function CartPage() {
   const shippingFee = isFreeShipping ? 0 : DEFAULT_PRICES.SHIPPING_FEE;
   const grandTotal = subtotal + tax + shippingFee;
 
-  const handleMoveToWishlist = (item: (typeof items)[0]) => {
-    const product = products.find((p) => p.id === item.productId);
-    if (product) {
-      addItemToWishlist(product);
-      removeItem(item.productId, item.variantName);
-      toast.success(`Moved ${item.name} to your wishlist`);
-    }
-  };
-
   if (items.length === 0) {
     return (
       <main className="mx-auto max-w-3xl px-4 py-28 text-center sm:px-6">
@@ -65,8 +47,8 @@ export default function CartPage() {
           Your shopping bag is empty
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm text-ink-600 leading-relaxed">
-          Every piece is designed to be an everyday signature. Explore our
-          slow-crafted jewelry and find pieces meant for you.
+          Every piece is chosen to be an everyday signature. Explore our
+          thoughtfully curated jewelry and find pieces meant for you.
         </p>
         <div className="mt-8 flex justify-center gap-4">
           <Link
@@ -75,13 +57,6 @@ export default function CartPage() {
           >
             <span>Explore The Catalog</span>
             <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/wishlist"
-            className="inline-flex items-center gap-2 rounded-full border border-ivory-300 bg-white px-6 py-3.5 text-sm font-medium text-ink-800 transition hover:border-gold-600 active:scale-97"
-          >
-            <Heart className="h-4 w-4 text-brand-600" />
-            <span>View Wishlist</span>
           </Link>
         </div>
       </main>
@@ -106,7 +81,7 @@ export default function CartPage() {
           <ul className="divide-y divide-ivory-200">
             {items.map((item) => (
               <li
-                key={`${item.productId}-${item.variantName || 'default'}`}
+                key={item.productId}
                 className="flex gap-4 py-6 sm:gap-6"
               >
                 {/* Product thumbnail */}
@@ -133,11 +108,6 @@ export default function CartPage() {
                         >
                           {item.name}
                         </Link>
-                        {item.variantName && (
-                          <p className="mt-0.5 text-xs text-gold-800 font-medium">
-                            Option: {item.variantName}
-                          </p>
-                        )}
                       </div>
                       <span className="font-serif text-base font-semibold text-ink-900 sm:text-lg">
                         {formatCurrency(item.price * item.quantity)}
@@ -158,7 +128,6 @@ export default function CartPage() {
                           setQuantity(
                             item.productId,
                             item.quantity - 1,
-                            item.variantName,
                           )
                         }
                         className="px-2 text-sm text-ink-600 hover:text-ink-900 active:scale-95"
@@ -175,7 +144,6 @@ export default function CartPage() {
                           setQuantity(
                             item.productId,
                             item.quantity + 1,
-                            item.variantName,
                           )
                         }
                         className="px-2 text-sm text-ink-600 hover:text-ink-900 active:scale-95"
@@ -189,18 +157,8 @@ export default function CartPage() {
                     <div className="flex items-center gap-4 text-xs">
                       <button
                         type="button"
-                        onClick={() => handleMoveToWishlist(item)}
-                        className="inline-flex items-center gap-1 text-ink-600 hover:text-brand-700"
-                      >
-                        <Heart className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">
-                          Save to Wishlist
-                        </span>
-                      </button>
-                      <button
-                        type="button"
                         onClick={() =>
-                          removeItem(item.productId, item.variantName)
+                          removeItem(item.productId)
                         }
                         className="inline-flex items-center gap-1 text-ink-400 hover:text-ink-900"
                       >

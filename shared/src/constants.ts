@@ -6,7 +6,7 @@ export const BRAND = {
   currency: "INR",
   currencySymbol: "₹",
   freeShippingThreshold: 5000,
-  supportEmail: "concierge@thumba.in",
+  supportEmail: "Thumbacollections@gmail.com",
   phone: "+91 (0) 80 4912 8800",
   address: "Studio Thumba, Indiranagar, Bengaluru 560038",
 } as const;
@@ -30,10 +30,8 @@ export const STOREFRONT_ROUTES = {
   HOME: "/",
   SHOP: "/shop",
   COLLECTIONS: "/collections",
-  WISHLIST: "/wishlist",
   CART: "/cart",
   CHECKOUT: "/checkout",
-  SEARCH: "/search",
   ABOUT: "/#about",
   CONTACT: "/#contact",
 } as const;
@@ -43,7 +41,6 @@ export const DASHBOARD_ROUTES = {
   PRODUCTS: "/products",
   ORDERS: "/orders",
   CUSTOMERS: "/customers",
-  ANALYTICS: "/analytics",
 } as const;
 
 export const CATEGORY_LABELS: Record<string, string> = {
@@ -56,18 +53,9 @@ export const CATEGORY_LABELS: Record<string, string> = {
   others: "Objet & Gifts",
 };
 
-export const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
-  { value: "newest", label: "Newest Arrivals" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "rating", label: "Highest Rated" },
-] as const;
-
-export type SortOptionValue = (typeof SORT_OPTIONS)[number]["value"];
-
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: "Pending",
+  packed: "Packed",
   confirmed: "Confirmed",
   processing: "Processing",
   shipped: "Shipped",

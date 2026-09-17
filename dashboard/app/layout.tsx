@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     default: 'Thumba Admin Dashboard',
     template: '%s | Thumba Admin',
   },
-  description: 'Manage products, orders, and analytics for Thumba.',
+  description: 'Manage products and orders for Thumba.',
 };
 
 export default function RootLayout({

@@ -5,9 +5,11 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import {
   getCollectionBySlug,
   getProductsByCollection,
-  collections,
+  getCollections,
 } from '@/lib/products';
 import { ProductGrid } from '@/components/ProductGrid';
+
+export const dynamic = 'force-dynamic';
 
 export default async function SingleCollectionPage({
   params,
@@ -15,13 +17,16 @@ export default async function SingleCollectionPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const collection = getCollectionBySlug(slug);
+  const [collection, items, collections] = await Promise.all([
+    getCollectionBySlug(slug),
+    getProductsByCollection(slug),
+    getCollections(),
+  ]);
 
   if (!collection) {
     notFound();
   }
 
-  const items = getProductsByCollection(slug);
   const otherCollections = collections.filter((c) => c.slug !== slug);
 
   return (
@@ -69,7 +74,7 @@ export default async function SingleCollectionPage({
             products={items}
             columns={4}
             emptyTitle="No pieces in this collection currently"
-            emptyDescription="The atelier is in the process of hand-finishing new pieces for this collection."
+            emptyDescription="New pieces are being selected for this collection."
           />
         </div>
 
@@ -79,7 +84,7 @@ export default async function SingleCollectionPage({
             Continue Exploring
           </p>
           <h2 className="mt-2 font-serif text-3xl font-semibold text-center text-ink-900">
-            Other Atelier Collections
+            Other Curated Collections
           </h2>
 
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-3">

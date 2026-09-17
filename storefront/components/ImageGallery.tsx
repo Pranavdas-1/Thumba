@@ -31,7 +31,7 @@ export function ImageGallery({
               key={idx}
               type="button"
               onClick={() => setSelectedIndex(idx)}
-              className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-ivory-100 transition-all duration-160 ${
+              className={`relative h-20 w-16 flex-shrink-0 overflow-hidden bg-ivory-100 transition-all duration-160 ${
                 selectedIndex === idx
                   ? 'ring-2 ring-ink-900 ring-offset-2'
                   : 'opacity-70 hover:opacity-100'

@@ -12,7 +12,7 @@ export function ProductGrid({
   products,
   columns = 4,
   emptyTitle = 'No jewelry found',
-  emptyDescription = "Try adjusting your filters or search query to find what you're looking for.",
+  emptyDescription = 'Try another part of the collection.',
 }: ProductGridProps) {
   if (products.length === 0) {
     return (

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RAZORPAY_CURRENCY, cartTotal } from "@thumba/shared";
-import { products } from "@/lib/products";
+import { RAZORPAY_CURRENCY, calculateTax, DEFAULT_PRICES, cartTotal } from "@thumba/shared";
+import { prisma } from "@thumba/shared/db";
 import { createRazorpayInstance, getPublicRazorpayKey, isRazorpayTestKey } from "@/lib/razorpay";
+
+export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   items: z
@@ -28,18 +30,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid checkout payload" }, { status: 400 });
   }
 
+  const productIds = [...new Set(parsed.data.items.map((item) => item.productId))];
+  const dbProducts = await prisma.product.findMany({ where: { id: { in: productIds } } });
+  const byId = new Map(dbProducts.map((product) => [product.id, product]));
+  const unavailable = parsed.data.items.some((item) => {
+    const product = byId.get(item.productId);
+    return !product || product.stock < item.quantity || !product.inStock;
+  });
+  if (unavailable) {
+    return NextResponse.json({ error: "One or more items are unavailable or out of stock" }, { status: 409 });
+  }
   const catalogItems = parsed.data.items.map((item) => {
-    const product = products.find((entry) => entry.id === item.productId);
-    if (!product || !product.inStock) {
-      throw new Error("One or more items are unavailable");
-    }
-    return {
-      price: product.discountedPrice ?? product.price,
-      quantity: item.quantity,
-    };
+    const product = byId.get(item.productId)!;
+    return { price: product.discountedPrice ?? product.price, quantity: item.quantity };
   });
 
-  const totalRupees = cartTotal(catalogItems);
+  const subtotal = cartTotal(catalogItems);
+  const totalRupees = subtotal + calculateTax(subtotal, DEFAULT_PRICES.TAX_RATE) + DEFAULT_PRICES.SHIPPING_FEE;
   const amountPaise = totalRupees * 100;
   const keyId = getPublicRazorpayKey();
 
@@ -61,6 +68,7 @@ export async function POST(request: Request) {
       notes: {
         source: "thumba-storefront",
         city: parsed.data.shipping.city,
+        subtotal: String(subtotal),
       },
     });
 

@@ -1,18 +1,24 @@
 import { formatCurrency } from "@thumba/shared";
-import { catalog } from "@thumba/shared";
-import { mockCustomers, mockOrders } from "@/lib/mock-data";
+import { prisma } from "@thumba/shared/db";
 
-export default function DashboardHome() {
-  const revenue = mockOrders.reduce((sum, order) => sum + order.total, 0);
+export const dynamic = "force-dynamic";
+
+export default async function DashboardHome() {
+  const [orders, customerCount, productCount] = await Promise.all([
+    prisma.order.findMany({ select: { id: true, status: true, total: true }, orderBy: { createdAt: "desc" }, take: 5 }),
+    prisma.user.count({ where: { role: "CUSTOMER" } }),
+    prisma.product.count(),
+  ]);
+  const revenue = orders.reduce((sum, order) => sum + order.total, 0);
 
   return (
     <main>
       <h1 className="font-serif text-3xl text-navy-900">Overview</h1>
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-4">
-        <Stat label="Revenue (sample)" value={formatCurrency(revenue)} />
-        <Stat label="Orders" value={String(mockOrders.length)} />
-        <Stat label="Customers" value={String(mockCustomers.length)} />
-        <Stat label="Products" value={String(catalog.length)} />
+        <Stat label="Revenue" value={formatCurrency(revenue)} />
+        <Stat label="Orders" value={String(orders.length)} />
+        <Stat label="Customers" value={String(customerCount)} />
+        <Stat label="Products" value={String(productCount)} />
       </div>
       <section className="mt-10 rounded-xl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold">Recent orders</h2>
@@ -25,10 +31,10 @@ export default function DashboardHome() {
             </tr>
           </thead>
           <tbody>
-            {mockOrders.map((order) => (
+            {orders.map((order) => (
               <tr key={order.id} className="border-t border-navy-100">
                 <td className="py-3">{order.id}</td>
-                <td className="capitalize">{order.status}</td>
+                <td className="capitalize">{order.status.toLowerCase()}</td>
                 <td>{formatCurrency(order.total)}</td>
               </tr>
             ))}

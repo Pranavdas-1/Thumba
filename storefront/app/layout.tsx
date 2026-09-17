@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Toaster } from 'sonner';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { WhatsAppButton } from '@/components/WhatsAppButton';
 import { editorialImages } from '@/lib/image-library';
 import './globals.css';
 
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
     'fine jewelry',
     'gold jewelry',
     'pearl necklace',
-    'artisan jewelry',
+    'curated jewelry',
     'gold jewelry',
     'quiet luxury',
   ],
@@ -49,6 +50,7 @@ export default function RootLayout({
         <Header />
         {children}
         <Footer />
+        <WhatsAppButton />
         <Toaster
           position="bottom-right"
           toastOptions={{

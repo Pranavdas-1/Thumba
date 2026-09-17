@@ -3,17 +3,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Menu, X, Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Menu, X, ShoppingBag, ArrowRight } from 'lucide-react';
 import { CATEGORY_LABELS, BRAND } from '@thumba/shared';
 import { useCartStore } from '@/lib/cart-store';
-import { useWishlistStore } from '@/lib/wishlist-store';
 
 export function MobileNav() {
   const [open, setOpen] = useState(false);
   const cartCount = useCartStore((state) =>
     state.items.reduce((sum, item) => sum + item.quantity, 0),
   );
-  const wishlistCount = useWishlistStore((state) => state.items.length);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -58,31 +56,16 @@ export function MobileNav() {
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-between font-serif text-2xl text-ink-900 hover:text-gold-700"
               >
-                <span>Shop All Pieces</span>
+                <span>Shop all pieces</span>
                 <ArrowRight className="h-4 w-4 text-gold-600" />
               </Link>
               <Link
-                href="/collections"
+                href="/new-arrivals"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-between font-serif text-2xl text-ink-900 hover:text-gold-700"
               >
-                <span>Collections</span>
+                <span>New arrivals</span>
                 <ArrowRight className="h-4 w-4 text-gold-600" />
-              </Link>
-              <Link
-                href="/wishlist"
-                onClick={() => setOpen(false)}
-                className="flex items-center justify-between font-serif text-xl text-ink-800 hover:text-gold-700"
-              >
-                <span className="flex items-center gap-2">
-                  <Heart className="h-4 w-4 text-brand-600" />
-                  <span>Wishlist</span>
-                </span>
-                {wishlistCount > 0 && (
-                  <span className="rounded-full bg-ivory-200 px-2 py-0.5 text-xs text-ink-800">
-                    {wishlistCount}
-                  </span>
-                )}
               </Link>
               <Link
                 href="/cart"
@@ -123,7 +106,7 @@ export function MobileNav() {
 
           <div className="border-t border-ivory-200 pt-4 text-xs text-ink-500">
             <p className="font-serif text-ink-800 italic">
-              Slow luxury, crafted with intention.
+              Quiet luxury, selected with intention.
             </p>
             <p className="mt-1">Bengaluru, India</p>
           </div>

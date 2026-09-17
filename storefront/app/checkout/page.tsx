@@ -106,7 +106,7 @@ export default function CheckoutPage() {
           Thank you for your order
         </h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-ink-600">
-          Your jewels are now entering the atelier packaging queue. A
+          Your jewels are now being prepared for dispatch. A
           confirmation email and tracking docket will be dispatched shortly.
         </p>
 
@@ -123,7 +123,7 @@ export default function CheckoutPage() {
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-ink-500">Atelier Docket:</dt>
+                <dt className="text-ink-500">Order Docket:</dt>
                 <dd className="font-mono">
                   {paymentDetails.razorpay_order_id}
                 </dd>
@@ -182,11 +182,35 @@ export default function CheckoutPage() {
         name: BRAND.name,
         description: 'Fine Jewelry Order',
         order_id: data.orderId,
-        handler: (payment: RazorpaySuccess) => {
-          clear();
-          setPaymentDetails(payment);
-          setStatus('paid');
-          setMessage(`Test payment captured.`);
+        handler: async (payment: RazorpaySuccess) => {
+          try {
+            const confirmation = await fetch('/api/checkout/confirm', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpayOrderId: payment.razorpay_order_id,
+                paymentId: payment.razorpay_payment_id,
+                customer: {
+                  name: String(form.get('name') || ''),
+                  email: String(form.get('email') || ''),
+                },
+                items: items.map((item) => ({
+                  productId: item.productId,
+                  quantity: item.quantity,
+                })),
+                shipping,
+              }),
+            });
+            const result = await confirmation.json();
+            if (!confirmation.ok) throw new Error(result.error || 'Could not save the order');
+            clear();
+            setPaymentDetails(payment);
+            setStatus('paid');
+            setMessage('Test payment captured.');
+          } catch (error) {
+            setStatus('error');
+            setMessage(error instanceof Error ? error.message : 'Could not save the order');
+          }
         },
         modal: {
           ondismiss: () => {
@@ -223,7 +247,7 @@ export default function CheckoutPage() {
         </Link>
         <p className="eyebrow mt-5 text-gold-700">The final detail</p>
         <h1 className="mt-3 font-serif text-5xl leading-[0.95] tracking-[-0.04em] text-ink-900 sm:text-6xl">
-          Secure Atelier Checkout
+          Secure Checkout
         </h1>
         <p className="mt-1 text-xs text-ink-500">
           Complete your delivery details to place the order.
@@ -384,7 +408,7 @@ export default function CheckoutPage() {
             <ul className="mt-4 max-h-80 divide-y divide-ivory-200 overflow-y-auto pr-1">
               {items.map((item) => (
                 <li
-                  key={`${item.productId}-${item.variantName || 'default'}`}
+                  key={item.productId}
                   className="flex gap-3.5 py-3.5"
                 >
                   <div className="relative h-16 w-14 flex-shrink-0 overflow-hidden rounded-xl bg-ivory-100">
@@ -403,11 +427,6 @@ export default function CheckoutPage() {
                       <p className="font-serif text-sm font-medium text-ink-900">
                         {item.name}
                       </p>
-                      {item.variantName && (
-                        <p className="text-[11px] text-gold-800">
-                          {item.variantName}
-                        </p>
-                      )}
                       <p className="text-xs text-ink-500">
                         Qty: {item.quantity}
                       </p>

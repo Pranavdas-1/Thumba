@@ -8,7 +8,6 @@ import { useCartStore } from '@/lib/cart-store';
 
 type AddToCartButtonProps = {
   product: Product;
-  variantName?: string;
   quantity?: number;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -16,7 +15,6 @@ type AddToCartButtonProps = {
 
 export function AddToCartButton({
   product,
-  variantName,
   quantity = 1,
   className = '',
   size = 'md',
@@ -31,11 +29,11 @@ export function AddToCartButton({
   }[size];
 
   const handleAdd = () => {
-    if (!product.inStock) return;
-    addItem(product, quantity, variantName);
+    if (!product.inStock || product.stock === 0) return;
+    addItem(product, quantity);
     setAdded(true);
     toast.success(
-      `Added ${product.name}${variantName ? ` (${variantName})` : ''} to your bag`,
+      `Added ${product.name} to your bag`,
     );
     setTimeout(() => setAdded(false), 1600);
   };
@@ -43,7 +41,7 @@ export function AddToCartButton({
   return (
     <button
       type="button"
-      disabled={!product.inStock}
+      disabled={!product.inStock || product.stock === 0}
       onClick={handleAdd}
       className={`group flex items-center justify-center gap-2 border border-ink-900 font-medium transition-[background-color,color,transform] duration-160 ease-out-cubic active:scale-97 disabled:cursor-not-allowed disabled:opacity-50 ${
         added
@@ -56,7 +54,7 @@ export function AddToCartButton({
           <Check className="h-4 w-4" />
           <span>Added to Bag</span>
         </>
-      ) : product.inStock ? (
+      ) : product.inStock && product.stock !== 0 ? (
         <>
           <ShoppingBag className="h-4 w-4 transition-transform group-hover:-translate-y-0.5" />
           <span>Add to Bag</span>

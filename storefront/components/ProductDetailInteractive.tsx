@@ -2,26 +2,16 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, Sparkles } from 'lucide-react';
-import { formatCurrency, discountPercentage } from '@thumba/shared';
+import { ChevronDown } from 'lucide-react';
+import { formatCurrency } from '@thumba/shared';
 import type { Product } from '@thumba/shared';
-import { displayPrice } from '@/lib/products';
 import { AddToCartButton } from './AddToCartButton';
-import { WishlistButton } from './WishlistButton';
-import { RatingStars } from './RatingStars';
+import { displayPrice } from '@/lib/products';
 
 export function ProductDetailInteractive({ product }: { product: Product }) {
-  const [selectedVariant, setSelectedVariant] = useState<string | undefined>(
-    product.variants?.[0]?.name,
-  );
   const [quantity, setQuantity] = useState(1);
   const [openSection, setOpenSection] = useState<string | null>('details');
 
-  const price = displayPrice(product);
-  const discountPct = discountPercentage(
-    product.price,
-    product.discountedPrice,
-  );
 
   const toggleSection = (id: string) => {
     setOpenSection(openSection === id ? null : id);
@@ -29,7 +19,7 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
 
   return (
     <div className="flex flex-col">
-      {/* Category & Rating Header */}
+      {/* Category Header */}
       <div className="flex items-center justify-between">
         <Link
           href={`/shop?category=${product.category}`}
@@ -37,12 +27,6 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
         >
           {product.category}
         </Link>
-        <a href="#reviews" className="hover:opacity-80 transition-opacity">
-          <RatingStars
-            rating={product.rating}
-            reviewCount={product.reviewCount}
-          />
-        </a>
       </div>
 
       {/* Product Title */}
@@ -59,25 +43,9 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
       {/* Price section */}
       <div className="mt-5 flex items-baseline gap-3">
         <span className="font-serif text-2xl font-medium text-ink-900 sm:text-3xl">
-          {formatCurrency(price)}
+          {formatCurrency(displayPrice(product))}
         </span>
-        {product.discountedPrice && product.discountedPrice < product.price && (
-          <span className="text-base text-ink-400 line-through">
-            {formatCurrency(product.price)}
-          </span>
-        )}
-        {discountPct > 0 && (
-          <span className="bg-brand-700 px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-ivory-50">
-            Save {discountPct}%
-          </span>
-        )}
       </div>
-      {false && (
-        <p className="mt-1 text-[11px] text-ink-500">
-        Includes all taxes and duties • Free shipping across India
-        </p>
-      )}
-
       {/* Description */}
       <div className="mt-6 border-t border-ivory-200 pt-6">
         <p className="text-sm leading-relaxed text-ink-700 sm:text-base sm:leading-relaxed">
@@ -89,34 +57,6 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
           </p>
         )}
       </div>
-
-      {/* Variant Selector */}
-      {product.variants && product.variants.length > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center justify-between text-xs">
-            <label className="font-semibold uppercase tracking-wider text-ink-800">
-              Select Size / Option:
-            </label>
-            <span className="text-gold-700 font-medium">{selectedVariant}</span>
-          </div>
-          <div className="mt-2.5 flex flex-wrap gap-2.5">
-            {product.variants.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => setSelectedVariant(v.name)}
-                className={`rounded-xl border px-4 py-2 text-xs font-medium transition-all duration-160 active:scale-95 ${
-                  selectedVariant === v.name
-                    ? 'border-ink-900 bg-ink-900 text-ivory-50 shadow-sm'
-                    : 'border-ivory-300 bg-white text-ink-800 hover:border-gold-500'
-                }`}
-              >
-                {v.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Quantity & CTA Buttons */}
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -147,32 +87,24 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
         <div className="flex-1">
           <AddToCartButton
             product={product}
-            variantName={selectedVariant}
             quantity={quantity}
             size="lg"
             className="w-full shadow-md"
           />
         </div>
 
-        {/* Wishlist Button */}
-        <div className="flex justify-center sm:justify-start">
-          <WishlistButton
-            product={product}
-            className="h-12 w-12 border border-ivory-300 shadow-sm"
-          />
-        </div>
       </div>
 
       {/* Accordion sections */}
       <div className="mt-8 divide-y divide-ivory-200 border-t border-ivory-200">
-        {/* Craft Details */}
+        {/* Material details */}
         <div className="py-4">
           <button
             type="button"
             onClick={() => toggleSection('details')}
             className="flex w-full items-center justify-between text-left font-serif text-lg font-medium text-ink-900"
           >
-            <span>Material & Craft Specifications</span>
+            <span>Material & specifications</span>
             <ChevronDown
               className={`h-4 w-4 text-ink-500 transition-transform duration-200 ${
                 openSection === 'details' ? 'rotate-180' : ''

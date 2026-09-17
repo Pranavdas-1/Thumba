@@ -1,15 +1,21 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { collections, products } from '@/lib/products';
+import { getCollections, getProducts } from '@/lib/products';
 
-export default function CollectionsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function CollectionsPage() {
+  const [collections, products] = await Promise.all([
+    getCollections(),
+    getProducts(),
+  ]);
   return (
     <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8 lg:py-28">
       <div className="max-w-2xl">
         <p className="eyebrow text-gold-700">Curated Portfolios</p>
         <h1 className="mt-5 font-serif text-5xl leading-[0.95] tracking-[-0.04em] text-ink-900 sm:text-7xl">
-          Atelier Collections
+          Curated Collections
         </h1>
         <p className="mt-6 max-w-xl text-base leading-7 text-ink-600">
           Each collection is curated around a distinct material and mood — warm

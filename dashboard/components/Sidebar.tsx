@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Users, LineChart } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -10,7 +10,6 @@ const links = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/customers", label: "Customers", icon: Users },
-  { href: "/analytics", label: "Analytics", icon: LineChart },
 ];
 
 export function Sidebar() {
