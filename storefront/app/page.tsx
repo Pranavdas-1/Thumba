@@ -18,8 +18,8 @@ export default async function HomePage() {
   return (
     <main className="bg-ivory-50">
       <section className="mx-auto max-w-[1600px] px-4 pb-4 pt-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[0.86fr_1.14fr]">
-          <div className="flex flex-col justify-between bg-ink-900 px-7 py-9 text-ivory-50 sm:px-12 sm:py-12 lg:px-16 lg:py-14">
+        <div className="grid grid-cols-1 lg:relative lg:aspect-[16/9]">
+          <div className="z-20 flex flex-col justify-between bg-ink-900 px-7 py-9 text-ivory-50 sm:px-12 sm:py-12 lg:absolute lg:inset-y-0 lg:left-0 lg:w-[43%] lg:px-12 lg:py-10 xl:px-16 xl:py-14">
             <div className="flex items-center justify-between text-gold-300">
               <p className="eyebrow">Thumba / 01</p>
               <p className="text-[10px] uppercase tracking-[0.22em] text-ivory-400">
@@ -61,17 +61,17 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="group relative aspect-[16/9] overflow-hidden bg-ivory-200">
+          <div className="group relative aspect-[16/9] overflow-hidden bg-ivory-200 lg:absolute lg:inset-0 lg:aspect-auto">
             <Image
               src={editorialImages.hero}
               alt="A sculptural gold necklace from the Thumba atelier"
               fill
               priority
               className="image-lift object-cover object-center"
-              sizes="(min-width: 1024px) 65vw, 100vw"
+              sizes="100vw"
             />
             <div className="absolute inset-0 bg-ink-900/10" />
-            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between border-t border-ivory-50/50 bg-ink-900/35 px-6 py-5 text-ivory-50 backdrop-blur-sm sm:px-8">
+            <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between border-t border-ivory-50/50 bg-ink-900/35 px-6 py-5 text-ivory-50 backdrop-blur-sm sm:px-8 lg:left-[43%]">
               <div>
                 <p className="eyebrow text-gold-200">The Nila pearl necklace</p>
                 <p className="mt-2 font-serif text-xl">
