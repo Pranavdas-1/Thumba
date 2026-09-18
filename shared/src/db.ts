@@ -3,7 +3,27 @@ import type { Category, Collection, OrderStatus, Product } from "./types";
 
 const globalForPrisma = globalThis as unknown as {
   thumbaPrisma?: PrismaClient;
+  thumbaDatabaseLogged?: boolean;
 };
+
+function maskDatabaseUrl(value: string | undefined) {
+  if (!value) return "<missing DATABASE_URL>";
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.username ? `${url.username}:***@` : ""}${url.host}${url.pathname}`;
+  } catch {
+    return "<invalid DATABASE_URL>";
+  }
+}
+
+if (!globalForPrisma.thumbaDatabaseLogged) {
+  const activeDatabaseUrl = process.env.DATABASE_URL;
+  console.info(`[thumba] active DATABASE_URL: ${maskDatabaseUrl(activeDatabaseUrl)}`);
+  if (activeDatabaseUrl && /localhost|127\.0\.0\.1/i.test(activeDatabaseUrl)) {
+    console.warn("[thumba] DATABASE_URL points to local PostgreSQL; set the same Supabase PostgreSQL connection string in every app environment for shared production data.");
+  }
+  globalForPrisma.thumbaDatabaseLogged = true;
+}
 
 export const prisma =
   globalForPrisma.thumbaPrisma ??

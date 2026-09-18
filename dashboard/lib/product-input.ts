@@ -32,6 +32,9 @@ export function validateProductInput(body: unknown):
   if (!Number.isInteger(stock) || stock < 0) return { ok: false, error: "stock must be a whole number" };
   const images = Array.isArray(value.images) ? value.images.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
   if (images.length === 0) return { ok: false, error: "At least one image URL is required" };
+  if (images.some((image) => !/^https?:\/\//i.test(image) || /\.svg(?:$|[?#])/i.test(image))) {
+    return { ok: false, error: "Product images must be public JPEG, WebP, or hosted image URLs (SVG is not supported)" };
+  }
   const discountedPrice = value.discountedPrice === null || value.discountedPrice === "" || value.discountedPrice === undefined ? null : Number(value.discountedPrice);
   if (discountedPrice !== null && (!Number.isFinite(discountedPrice) || discountedPrice < 0)) return { ok: false, error: "discountedPrice must be a positive number" };
 

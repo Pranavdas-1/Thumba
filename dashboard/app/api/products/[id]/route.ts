@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { categoryToPrismaCategory, mapPrismaProduct, prisma } from "@thumba/shared/db";
 import { handlePrismaError, optionalText } from "@/lib/product-input";
+import { deleteSupabaseImages } from "@/lib/storage";
 
 export async function PATCH(
   request: Request,
@@ -66,11 +67,18 @@ export async function PATCH(
   }
 
   try {
+    const previous = "images" in value
+      ? await prisma.product.findUnique({ where: { id }, select: { images: true } })
+      : null;
     const row = await prisma.product.update({
       where: { id },
       data,
       include: { collection: true },
     });
+    if (previous) {
+      const removedImages = previous.images.filter((image) => !row.images.includes(image));
+      await deleteSupabaseImages(removedImages);
+    }
     revalidatePath("/", "layout");
     return NextResponse.json({ product: mapPrismaProduct(row) });
   } catch (error) {
@@ -84,7 +92,9 @@ export async function DELETE(
 ) {
   const { id } = await params;
   try {
+    const product = await prisma.product.findUnique({ where: { id }, select: { images: true } });
     await prisma.product.delete({ where: { id } });
+    if (product) await deleteSupabaseImages(product.images);
     return NextResponse.json({ ok: true });
   } catch (error) {
     const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
