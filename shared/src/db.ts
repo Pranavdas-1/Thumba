@@ -63,6 +63,7 @@ export function mapPrismaProduct(product: ProductWithRelations): Product {
     careInstructions: product.careInstructions ?? undefined,
     stock: product.stock,
     inStock: product.stock > 0 && product.inStock,
+    hidden: product.hidden,
     featured: product.featured,
     isNew: product.isNew,
     collectionId: product.collectionId ?? undefined,

@@ -44,6 +44,7 @@ export type Product = {
   careInstructions?: string;
   stock?: number;
   inStock: boolean;
+  hidden?: boolean;
   featured?: boolean;
   isNew?: boolean;
   collectionId?: string;

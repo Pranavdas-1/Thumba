@@ -1,10 +1,8 @@
-import { BadgeCheck, Gem, ShieldCheck, Truck } from 'lucide-react';
+import { ShieldCheck, Truck } from 'lucide-react';
 
 const trustItems = [
-  { label: 'Authenticity certificate', icon: BadgeCheck },
-  { label: 'Secure payments', icon: ShieldCheck },
+  { label: 'Secure payment', icon: ShieldCheck },
   { label: 'India-wide delivery', icon: Truck },
-  { label: 'Hallmarked materials', icon: Gem },
 ];
 
 export function TrustBadges({ className = '' }: { className?: string }) {

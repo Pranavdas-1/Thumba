@@ -16,7 +16,7 @@ export {
 export type { Collection, Product };
 
 const isAvailable = (product: Product) =>
-  product.inStock && (product.stock ?? 0) > 0;
+  !product.hidden && product.inStock && (product.stock ?? 0) > 0;
 
 export async function getProducts(options?: { search?: string }) {
   const products = (await listProducts()).filter(isAvailable);
@@ -30,7 +30,10 @@ export async function getProducts(options?: { search?: string }) {
   );
 }
 export const getCollections = listCollections;
-export const getProductBySlug = findProductBySlug;
+export async function getProductBySlug(slug: string) {
+  const product = await findProductBySlug(slug);
+  return product && !product.hidden ? product : undefined;
+}
 export const getCollectionBySlug = findCollectionBySlug;
 
 export async function getProductsByCategory(category: string) {

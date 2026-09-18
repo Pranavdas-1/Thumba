@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Collection, Product } from "@thumba/shared";
 import { CATEGORY_LABELS, formatCurrency, slugify } from "@thumba/shared";
-import { ArrowDown, ArrowUp, Link2, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, Eye, EyeOff, Link2, Trash2, Upload } from "lucide-react";
 
 type ProductForm = {
   name: string;
@@ -94,6 +94,8 @@ export function ProductsManager({
     ],
     [form.images, form.pendingImages, pendingPreviewUrls],
   );
+  const visibleProducts = products.filter((product) => !product.hidden);
+  const hiddenProducts = products.filter((product) => product.hidden);
 
   const editingLabel = useMemo(() => (editingId ? "Edit product" : "Add product"), [editingId]);
   const updateForm = <K extends keyof ProductForm>(key: K, value: ProductForm[K]) =>
@@ -230,17 +232,16 @@ export function ProductsManager({
     }
   }
 
-  async function updateStock(product: Product, stockValue: string) {
-    const stock = Number(stockValue);
-    if (!Number.isInteger(stock) || stock < 0) return;
+  async function toggleHidden(product: Product) {
+    setError("");
     const response = await fetch(`/api/products/${product.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stock }),
+      body: JSON.stringify({ hidden: !product.hidden }),
     });
     const data = await response.json();
     if (response.ok) setProducts((current) => current.map((item) => item.id === product.id ? data.product : item));
-    else setError(data.error || "Could not update stock");
+    else setError(data.error || "Could not update product visibility");
   }
 
   async function deleteProduct(product: Product) {
@@ -297,7 +298,9 @@ export function ProductsManager({
         </form>
       )}
 
-      <div className="mt-8 overflow-x-auto rounded-xl bg-white shadow-sm"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-navy-50 text-navy-500"><tr><th className="px-4 py-3">Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>{products.map((product) => <tr key={product.id} className="border-t border-navy-100"><td className="px-4 py-3 font-medium text-navy-900">{product.name}<span className="block text-xs text-navy-400">/{product.slug}</span></td><td className="capitalize">{product.category}</td><td>{formatCurrency(product.discountedPrice ?? product.price)}</td><td><input aria-label={`Stock for ${product.name}`} type="number" min="0" defaultValue={product.stock ?? 0} onBlur={(event) => updateStock(product, event.target.value)} className="w-20 rounded border border-navy-200 px-2 py-1" /></td><td className="space-x-3"><button type="button" onClick={() => openEdit(product)} className="text-navy-700 underline hover:text-navy-900">Edit</button><button type="button" onClick={() => deleteProduct(product)} className="text-red-600 underline hover:text-red-800">Delete</button></td></tr>)}</tbody></table>{products.length === 0 && <p className="p-8 text-center text-sm text-navy-500">No products yet. Add the first piece above.</p>}</div>
+      <div className="mt-8 overflow-x-auto rounded-xl bg-white shadow-sm"><table className="w-full min-w-[760px] text-left text-sm"><thead className="bg-navy-50 text-navy-500"><tr><th className="px-4 py-3">Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead><tbody>{visibleProducts.map((product) => <tr key={product.id} className="border-t border-navy-100"><td className="px-4 py-3 font-medium text-navy-900">{product.name}<span className="block text-xs text-navy-400">/{product.slug}</span></td><td className="capitalize">{product.category}</td><td>{formatCurrency(product.discountedPrice ?? product.price)}</td><td className="text-sm text-navy-700">{product.stock ?? 0}</td><td className="space-x-3"><button type="button" onClick={() => openEdit(product)} className="text-navy-700 underline hover:text-navy-900">Edit</button><button type="button" onClick={() => toggleHidden(product)} className="inline-flex items-center gap-1 text-navy-700 underline hover:text-navy-900" aria-label={`Hide ${product.name}`}><EyeOff className="h-3.5 w-3.5" />Hide</button><button type="button" onClick={() => deleteProduct(product)} className="text-red-600 underline hover:text-red-800">Delete</button></td></tr>)}</tbody></table>{visibleProducts.length === 0 && <p className="p-8 text-center text-sm text-navy-500">No visible products yet. Add a product or unhide one below.</p>}</div>
+
+      <section className="mt-10"><h2 className="font-serif text-2xl text-navy-900">Hidden Products</h2><p className="mt-1 text-sm text-navy-500">Hidden products stay in the catalog for admin use but never appear on the storefront.</p><div className="mt-4 overflow-x-auto rounded-xl bg-white shadow-sm"><table className="w-full min-w-[620px] text-left text-sm"><thead className="bg-navy-50 text-navy-500"><tr><th className="px-4 py-3">Name</th><th>Category</th><th>Stock</th><th>Actions</th></tr></thead><tbody>{hiddenProducts.map((product) => <tr key={product.id} className="border-t border-navy-100"><td className="px-4 py-3 font-medium text-navy-900">{product.name}<span className="block text-xs text-navy-400">/{product.slug}</span></td><td className="capitalize">{product.category}</td><td>{product.stock ?? 0}</td><td className="space-x-3"><button type="button" onClick={() => openEdit(product)} className="text-navy-700 underline hover:text-navy-900">Edit</button><button type="button" onClick={() => toggleHidden(product)} className="inline-flex items-center gap-1 text-navy-700 underline hover:text-navy-900" aria-label={`Unhide ${product.name}`}><Eye className="h-3.5 w-3.5" />Unhide</button></td></tr>)}</tbody></table>{hiddenProducts.length === 0 && <p className="p-8 text-center text-sm text-navy-500">No hidden products.</p>}</div></section>
     </div>
   );
 }

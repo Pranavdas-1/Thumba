@@ -60,6 +60,7 @@ export async function PATCH(
   if ("category" in value) data.category = categoryToPrismaCategory(String(value.category));
   if ("featured" in value) data.featured = Boolean(value.featured);
   if ("isNew" in value) data.isNew = Boolean(value.isNew);
+  if ("hidden" in value) data.hidden = Boolean(value.hidden);
   if ("collectionId" in value) {
     data.collection = value.collectionId
       ? { connect: { id: String(value.collectionId) } }
