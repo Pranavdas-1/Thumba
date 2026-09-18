@@ -1,29 +1,21 @@
-import { mockCustomers } from "@/lib/mock-data";
+import { prisma } from "@thumba/shared/db";
+import { CustomersManager, type AdminCustomer } from "@/components/CustomersManager";
 
-export default function CustomersPage() {
-  return (
-    <main>
-      <h1 className="font-serif text-3xl text-navy-900">Customers</h1>
-      <div className="mt-8 overflow-hidden rounded-xl bg-white shadow-sm">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-navy-50 text-navy-500">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th>Email</th>
-              <th>Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockCustomers.map((customer) => (
-              <tr key={customer.id} className="border-t border-navy-100">
-                <td className="px-4 py-3">{customer.name}</td>
-                <td>{customer.email}</td>
-                <td className="capitalize">{customer.role}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </main>
-  );
+export const dynamic = "force-dynamic";
+
+export default async function CustomersPage() {
+  const users = await prisma.user.findMany({ include: { orders: { include: { shippingAddress: true }, orderBy: { createdAt: "desc" } } }, orderBy: { createdAt: "desc" } });
+  const customers: AdminCustomer[] = users.map((user) => {
+    const latestAddress = user.orders.find((order) => order.shippingAddress)?.shippingAddress;
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone ?? "",
+      address: latestAddress ? `${latestAddress.street}, ${latestAddress.city}, ${latestAddress.state} ${latestAddress.zipCode}` : "No address saved",
+      orders: user.orders.map((order) => ({ id: order.id, total: order.total, createdAt: order.createdAt.toISOString(), status: order.status === "COMPLETE" ? "complete" : "incomplete" })),
+    };
+  });
+
+  return <main><CustomersManager initialCustomers={customers} /></main>;
 }

@@ -45,6 +45,11 @@ export function ProductDetailInteractive({ product }: { product: Product }) {
         <span className="font-serif text-2xl font-medium text-ink-900 sm:text-3xl">
           {formatCurrency(displayPrice(product))}
         </span>
+        {product.stock !== undefined && product.stock > 0 && product.stock <= 10 && (
+          <span className="text-xs font-semibold uppercase tracking-[0.12em] text-red-700">
+            Only {product.stock} left
+          </span>
+        )}
       </div>
       {/* Description */}
       <div className="mt-6 border-t border-ivory-200 pt-6">

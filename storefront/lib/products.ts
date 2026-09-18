@@ -24,7 +24,7 @@ export async function getProducts(options?: { search?: string }) {
   if (!query) return products;
 
   return products.filter((product) =>
-    [product.name, product.description, product.material, product.category, product.subtitle]
+    [product.name, product.description, product.category, product.subtitle]
       .filter(Boolean)
       .some((value) => value!.toLowerCase().includes(query)),
   );

@@ -8,16 +8,8 @@ export type Category =
   | "others";
 
 export type OrderStatus =
-  | "pending"
-  | "packed"
-  | "confirmed"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "cancelled"
-  | "refunded";
-
-export type UserRole = "customer" | "admin";
+  | "incomplete"
+  | "complete";
 
 export type Address = {
   street: string;
@@ -49,9 +41,6 @@ export type Product = {
   discountedPrice?: number;
   images: string[];
   category: Category;
-  material: string;
-  weight: string;
-  dimensions?: string;
   careInstructions?: string;
   stock?: number;
   inStock: boolean;
@@ -88,8 +77,8 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   image?: string;
-  role: UserRole;
   createdAt: string;
   updatedAt: string;
 };

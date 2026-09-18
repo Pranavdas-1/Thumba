@@ -52,6 +52,11 @@ export function ProductCard({
         </div>
         <div className="mt-3 flex items-baseline gap-2">
           <span className="text-sm font-medium text-ink-900">{formatCurrency(displayPrice(product))}</span>
+          {product.stock !== undefined && product.stock > 0 && product.stock <= 10 && (
+            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-red-700">
+              Only {product.stock} left
+            </span>
+          )}
         </div>
       </div>
     </Link>

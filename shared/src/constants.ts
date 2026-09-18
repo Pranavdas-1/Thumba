@@ -53,12 +53,6 @@ export const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  packed: "Packed",
-  confirmed: "Confirmed",
-  processing: "Processing",
-  shipped: "Shipped",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-  refunded: "Refunded",
+  incomplete: "Incomplete",
+  complete: "Complete",
 };

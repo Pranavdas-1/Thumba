@@ -5,7 +5,6 @@ export type {
   OrderItem,
   OrderStatus,
   User,
-  UserRole,
   CartItem,
   Category,
   Address,

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { categoryToPrismaCategory, mapPrismaProduct, prisma } from "@thumba/shared/db";
 import { handlePrismaError, optionalText } from "@/lib/product-input";
 
@@ -20,14 +21,11 @@ export async function PATCH(
     "subtitle",
     "description",
     "story",
-    "material",
-    "weight",
-    "dimensions",
     "careInstructions",
   ];
   for (const field of textFields) {
     if (field in value) {
-      if (field === "name" || field === "description" || field === "material" || field === "weight") {
+      if (field === "name" || field === "description") {
         if (typeof value[field] !== "string" || !value[field].trim()) {
           return NextResponse.json({ error: `${field} cannot be empty` }, { status: 400 });
         }
@@ -52,7 +50,7 @@ export async function PATCH(
     data.inStock = stock > 0;
   }
   if ("images" in value) {
-    if (!Array.isArray(value.images) || value.images.length === 0) return NextResponse.json({ error: "At least one image URL is required" }, { status: 400 });
+    if (!Array.isArray(value.images)) return NextResponse.json({ error: "images must be an array" }, { status: 400 });
     data.images = value.images.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
   }
   if ("details" in value) {
@@ -73,6 +71,7 @@ export async function PATCH(
       data,
       include: { collection: true },
     });
+    revalidatePath("/", "layout");
     return NextResponse.json({ product: mapPrismaProduct(row) });
   } catch (error) {
     return handlePrismaError(error);

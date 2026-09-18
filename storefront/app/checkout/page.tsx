@@ -235,6 +235,7 @@ export default function CheckoutPage() {
                 customer: {
                   name: values.name,
                   email: values.email,
+                  phone: values.phone,
                 },
                 items: items.map((item) => ({
                   productId: item.productId,

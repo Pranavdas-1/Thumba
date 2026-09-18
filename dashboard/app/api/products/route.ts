@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { categoryToPrismaCategory, listProducts, mapPrismaProduct, prisma } from "@thumba/shared/db";
 import { slugify } from "@thumba/shared";
 import { handlePrismaError, validateProductInput } from "@/lib/product-input";
@@ -27,9 +28,6 @@ export async function POST(request: Request) {
         discountedPrice: input.discountedPrice,
         images: input.images,
         category: categoryToPrismaCategory(input.category),
-        material: input.material,
-        weight: input.weight,
-        dimensions: input.dimensions,
         careInstructions: input.careInstructions,
         details: input.details,
         stock: input.stock,
@@ -40,6 +38,7 @@ export async function POST(request: Request) {
       },
       include: { collection: true },
     });
+    revalidatePath("/", "layout");
     return NextResponse.json({ product: mapPrismaProduct(row) }, { status: 201 });
   } catch (error) {
     return handlePrismaError(error);

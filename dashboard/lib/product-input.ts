@@ -10,9 +10,6 @@ export type ProductInput = {
   discountedPrice: number | null;
   images: string[];
   category: string;
-  material: string;
-  weight: string;
-  dimensions: string | null;
   careInstructions: string | null;
   details: string[];
   stock: number;
@@ -26,7 +23,7 @@ export function validateProductInput(body: unknown):
   | { ok: false; error: string } {
   if (!body || typeof body !== "object") return { ok: false, error: "Invalid product payload" };
   const value = body as Record<string, unknown>;
-  for (const key of ["name", "description", "material", "weight"]) {
+  for (const key of ["name", "description"]) {
     if (typeof value[key] !== "string" || !value[key].trim()) return { ok: false, error: `${key} is required` };
   }
   const price = Number(value.price);
@@ -50,9 +47,6 @@ export function validateProductInput(body: unknown):
       discountedPrice,
       images,
       category: typeof value.category === "string" ? value.category : "necklaces",
-      material: String(value.material).trim(),
-      weight: String(value.weight).trim(),
-      dimensions: optionalText(value.dimensions),
       careInstructions: optionalText(value.careInstructions),
       details: Array.isArray(value.details) ? value.details.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [],
       stock,

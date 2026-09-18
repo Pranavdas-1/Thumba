@@ -11,8 +11,8 @@ model User {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
+  phone     String?
   image     String?
-  role      Role     @default(CUSTOMER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   carts     Cart[]
@@ -48,9 +48,6 @@ model Product {
   discountedPrice  Float?
   images           String[]
   category         Category
-  material         String
-  weight           String
-  dimensions       String?
   careInstructions String?
   details          String[]    @default([])
   stock            Int         @default(0)
@@ -70,7 +67,7 @@ model Order {
   id              String      @id @default(cuid())
   userId          String
   total           Float
-  status          OrderStatus @default(PENDING)
+  status          OrderStatus @default(INCOMPLETE)
   paymentId       String?
   razorpayOrderId String?     @unique
   createdAt       DateTime    @default(now())
@@ -121,11 +118,6 @@ model Cart {
   @@map("carts")
 }
 
-enum Role {
-  CUSTOMER
-  ADMIN
-}
-
 enum Category {
   NECKLACES
   EARRINGS
@@ -137,12 +129,6 @@ enum Category {
 }
 
 enum OrderStatus {
-  PENDING
-  PACKED
-  CONFIRMED
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  REFUNDED
+  INCOMPLETE
+  COMPLETE
 }

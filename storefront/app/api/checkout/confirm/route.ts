@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { calculateTax, DEFAULT_PRICES, cartTotal } from "@thumba/shared";
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 const bodySchema = z.object({
   razorpayOrderId: z.string().min(1),
   paymentId: z.string().min(1),
-  customer: z.object({ name: z.string().min(1), email: z.string().email() }),
+  customer: z.object({ name: z.string().min(1), email: z.string().email(), phone: z.string().optional() }),
   items: z.array(z.object({ productId: z.string().min(1), quantity: z.number().int().positive() })).min(1),
   shipping: z.object({
     street: z.string().min(1),
@@ -44,17 +45,28 @@ export async function POST(request: Request) {
       });
       const subtotal = cartTotal(lineItems);
       const total = subtotal + calculateTax(subtotal, DEFAULT_PRICES.TAX_RATE) + DEFAULT_PRICES.SHIPPING_FEE;
+
+      // Reserve every line inside the same transaction as order creation. The
+      // conditional update is the oversell guard when two checkouts race.
+      for (const { product, quantity } of lineItems) {
+        const updated = await tx.product.updateMany({
+          where: { id: product.id, inStock: true, stock: { gte: quantity } },
+          data: { stock: { decrement: quantity }, inStock: product.stock > quantity },
+        });
+        if (updated.count !== 1) throw new CheckoutError("Stock changed while checking out; please try again");
+      }
+
       const user = await tx.user.upsert({
         where: { email: parsed.data.customer.email },
-        update: { name: parsed.data.customer.name },
-        create: { name: parsed.data.customer.name, email: parsed.data.customer.email, role: "CUSTOMER" },
+        update: { name: parsed.data.customer.name, phone: parsed.data.customer.phone || undefined },
+        create: { name: parsed.data.customer.name, email: parsed.data.customer.email, phone: parsed.data.customer.phone || null },
       });
 
       const order = await tx.order.create({
         data: {
           user: { connect: { id: user.id } },
           total,
-          status: "PENDING",
+          status: "INCOMPLETE",
           paymentId: parsed.data.paymentId,
           razorpayOrderId: parsed.data.razorpayOrderId,
           shippingAddress: { create: { ...parsed.data.shipping, country: "India" } },
@@ -68,20 +80,19 @@ export async function POST(request: Request) {
         },
       });
 
-      for (const { product, quantity } of lineItems) {
-        const updated = await tx.product.updateMany({
-          where: { id: product.id, inStock: true, stock: { gte: quantity } },
-          data: { stock: { decrement: quantity }, inStock: product.stock - quantity > 0 },
-        });
-        if (updated.count !== 1) throw new CheckoutError("Stock changed while checking out; please try again");
-      }
-
       return order;
     }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+
+    revalidatePath("/", "layout");
+    revalidatePath("/shop");
+    revalidatePath("/new-arrivals");
 
     return NextResponse.json({ orderId: order.id, status: order.status.toLowerCase() });
   } catch (error) {
     if (error instanceof CheckoutError) return NextResponse.json({ error: error.message }, { status: 409 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+      return NextResponse.json({ error: "Stock changed while checking out; please try again" }, { status: 409 });
+    }
     console.error(error);
     return NextResponse.json({ error: "Could not save the order" }, { status: 500 });
   }
