@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   const byId = new Map(dbProducts.map((product) => [product.id, product]));
   const unavailable = parsed.data.items.some((item) => {
     const product = byId.get(item.productId);
-    return !product || product.stock < item.quantity || !product.inStock;
+    return !product || product.hidden || product.stock < item.quantity || !product.inStock;
   });
   if (unavailable) {
     return NextResponse.json({ error: "One or more items are unavailable or out of stock" }, { status: 409 });

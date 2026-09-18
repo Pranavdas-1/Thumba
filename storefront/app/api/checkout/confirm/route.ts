@@ -2,14 +2,16 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { calculateTax, DEFAULT_PRICES, cartTotal } from "@thumba/shared";
+import { RAZORPAY_CURRENCY, calculateTax, DEFAULT_PRICES, cartTotal } from "@thumba/shared";
 import { prisma } from "@thumba/shared/db";
+import { createRazorpayInstance, verifyRazorpaySignature } from "@/lib/razorpay";
 
 export const dynamic = "force-dynamic";
 
 const bodySchema = z.object({
   razorpayOrderId: z.string().min(1),
   paymentId: z.string().min(1),
+  razorpaySignature: z.string().min(1),
   customer: z.object({ name: z.string().min(1), email: z.string().email(), phone: z.string().optional() }),
   items: z.array(z.object({ productId: z.string().min(1), quantity: z.number().int().positive() })).min(1),
   shipping: z.object({
@@ -24,6 +26,33 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid payment confirmation payload" }, { status: 400 });
 
+  if (!verifyRazorpaySignature(parsed.data.razorpayOrderId, parsed.data.paymentId, parsed.data.razorpaySignature)) {
+    return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
+  }
+
+  let razorpayOrder;
+  let razorpayPayment;
+  try {
+    const razorpay = createRazorpayInstance();
+    [razorpayOrder, razorpayPayment] = await Promise.all([
+      razorpay.orders.fetch(parsed.data.razorpayOrderId),
+      razorpay.payments.fetch(parsed.data.paymentId),
+    ]);
+  } catch {
+    return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
+  }
+
+  if (
+    razorpayPayment.order_id !== parsed.data.razorpayOrderId ||
+    razorpayPayment.status !== "captured" ||
+    !razorpayPayment.captured ||
+    razorpayPayment.currency !== RAZORPAY_CURRENCY ||
+    razorpayOrder.currency !== RAZORPAY_CURRENCY ||
+    razorpayOrder.status !== "paid"
+  ) {
+    return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
+  }
+
   try {
     const order = await prisma.$transaction(async (tx) => {
       const existing = await tx.order.findUnique({ where: { razorpayOrderId: parsed.data.razorpayOrderId } });
@@ -36,7 +65,7 @@ export async function POST(request: Request) {
       const byId = new Map(rows.map((row) => [row.id, row]));
       for (const [productId, quantity] of quantities) {
         const product = byId.get(productId);
-        if (!product || !product.inStock || product.stock < quantity) throw new CheckoutError("One or more products are out of stock");
+        if (!product || product.hidden || !product.inStock || product.stock < quantity) throw new CheckoutError("One or more products are out of stock");
       }
 
       const lineItems = [...quantities.entries()].map(([productId, quantity]) => {
@@ -45,6 +74,9 @@ export async function POST(request: Request) {
       });
       const subtotal = cartTotal(lineItems);
       const total = subtotal + calculateTax(subtotal, DEFAULT_PRICES.TAX_RATE) + DEFAULT_PRICES.SHIPPING_FEE;
+      if (Math.round(total * 100) !== Number(razorpayOrder.amount)) {
+        throw new CheckoutError("Payment amount does not match the checkout");
+      }
 
       // Reserve every line inside the same transaction as order creation. The
       // conditional update is the oversell guard when two checkouts race.

@@ -21,6 +21,7 @@ import { TrustBadges } from '@/components/TrustBadges';
 type RazorpaySuccess = {
   razorpay_payment_id: string;
   razorpay_order_id: string;
+  razorpay_signature: string;
 };
 
 type CheckoutField = 'name' | 'email' | 'street' | 'city' | 'state' | 'zipCode';
@@ -232,6 +233,7 @@ export default function CheckoutPage() {
               body: JSON.stringify({
                 razorpayOrderId: payment.razorpay_order_id,
                 paymentId: payment.razorpay_payment_id,
+                razorpaySignature: payment.razorpay_signature,
                 customer: {
                   name: values.name,
                   email: values.email,

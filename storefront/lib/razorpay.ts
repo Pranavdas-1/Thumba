@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import Razorpay from "razorpay";
 
 export function isRazorpayTestKey(keyId: string): boolean {
@@ -20,4 +21,25 @@ export function createRazorpayInstance(): Razorpay {
   }
 
   return new Razorpay({ key_id, key_secret });
+}
+
+export function verifyRazorpaySignature(
+  razorpayOrderId: string,
+  razorpayPaymentId: string,
+  signature: string,
+): boolean {
+  const secret = process.env.RAZORPAY_KEY_SECRET || "";
+  if (!secret || !signature) return false;
+
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+    .digest("hex");
+  const expectedBuffer = Buffer.from(expected, "utf8");
+  const receivedBuffer = Buffer.from(signature, "utf8");
+
+  return (
+    expectedBuffer.length === receivedBuffer.length &&
+    crypto.timingSafeEqual(expectedBuffer, receivedBuffer)
+  );
 }
