@@ -7,11 +7,22 @@ import { formatCurrency } from '@thumba/shared';
 import type { Product } from '@thumba/shared';
 import { AddToCartButton } from './AddToCartButton';
 import { displayPrice } from '@/lib/products';
+import { useLiveProduct } from '@/lib/use-live-products';
 
 export function ProductDetailInteractive({ product }: { product: Product }) {
+  const liveProduct = useLiveProduct(product);
   const [quantity, setQuantity] = useState(1);
   const [openSection, setOpenSection] = useState<string | null>(null);
 
+  if (!liveProduct || liveProduct.hidden) {
+    return (
+      <div className="rounded-2xl border border-ivory-200 bg-ivory-100 p-6 text-sm text-ink-700">
+        This piece is no longer available.
+      </div>
+    );
+  }
+
+  product = liveProduct;
 
   const toggleSection = (id: string) => {
     setOpenSection(openSection === id ? null : id);

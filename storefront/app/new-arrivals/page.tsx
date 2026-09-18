@@ -29,6 +29,7 @@ export default async function NewArrivalsPage() {
         <ProductGrid
           products={products}
           columns={4}
+          filter={{ isNew: true }}
           emptyTitle="New pieces are on the way"
           emptyDescription="Check back soon for the next selection."
         />

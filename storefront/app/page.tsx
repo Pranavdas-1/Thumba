@@ -2,7 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getCollections, getProducts } from '@/lib/products';
-import { ProductCard } from '@/components/ProductCard';
+import { LiveProductCards } from '@/components/LiveProductCards';
 import { editorialImages } from '@/lib/image-library';
 
 export const dynamic = 'force-dynamic';
@@ -88,9 +88,7 @@ export default async function HomePage() {
             <p className="mt-7 max-w-sm text-sm leading-7 text-ink-600">A considered edit of our most-worn silhouettes. Selected with enough presence for the room, and enough ease for the morning after.</p>
             <Link href="/shop" className="link-underline mt-9 inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-ink-900">Shop all pieces <ArrowUpRight className="h-4 w-4" /></Link>
           </div>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6">
-            {featured.map((product, index) => <div key={product.id} className={index === 1 ? 'sm:mt-20 lg:mt-0' : ''}><ProductCard product={product} priority={index < 2} /></div>)}
-          </div>
+          <LiveProductCards initialProducts={featured} filter={{ featured: true }} variant="featured" />
         </div>
       </section>
 
@@ -134,7 +132,7 @@ export default async function HomePage() {
             <div><p className="eyebrow text-gold-700">Newly selected</p><h2 className="mt-4 font-serif text-4xl tracking-[-0.04em] text-ink-900 sm:text-6xl">New, but already familiar.</h2></div>
             <Link href="/new-arrivals" className="link-underline inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-ink-900">See the latest <ArrowRight className="h-4 w-4" /></Link>
           </div>
-          <div className="mt-14 grid grid-cols-2 gap-x-4 gap-y-14 sm:gap-x-6 lg:grid-cols-4">{newArrivals.map((product, index) => <ProductCard key={product.id} product={product} priority={index < 2} />)}</div>
+          <div className="mt-14"><LiveProductCards initialProducts={newArrivals} filter={{ isNew: true }} variant="new-arrivals" /></div>
         </div>
       </section>
 

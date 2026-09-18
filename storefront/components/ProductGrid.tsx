@@ -1,11 +1,16 @@
+'use client';
+
 import type { Product } from '@thumba/shared';
+import type { ProductRealtimeFilter } from '@thumba/shared';
 import { ProductCard } from './ProductCard';
+import { useLiveProducts } from '@/lib/use-live-products';
 
 type ProductGridProps = {
   products: Product[];
   columns?: 3 | 4;
   emptyTitle?: string;
   emptyDescription?: string;
+  filter?: ProductRealtimeFilter;
 };
 
 export function ProductGrid({
@@ -13,8 +18,11 @@ export function ProductGrid({
   columns = 4,
   emptyTitle = 'No jewelry found',
   emptyDescription = 'Try another part of the collection.',
+  filter = {},
 }: ProductGridProps) {
-  if (products.length === 0) {
+  const liveProducts = useLiveProducts(products, filter);
+
+  if (liveProducts.length === 0) {
     return (
       <div className="flex min-h-[300px] flex-col items-center justify-center border border-dashed border-ivory-300 p-12 text-center">
         <p className="font-serif text-2xl text-ink-900">{emptyTitle}</p>
@@ -30,7 +38,7 @@ export function ProductGrid({
 
   return (
     <div className={`grid gap-x-4 gap-y-14 sm:gap-x-6 ${gridColsClass}`}>
-      {products.map((product, idx) => (
+      {liveProducts.map((product, idx) => (
         <div
           key={product.id}
           className="animate-fade-in-up"

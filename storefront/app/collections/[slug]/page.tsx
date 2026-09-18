@@ -73,6 +73,7 @@ export default async function SingleCollectionPage({
           <ProductGrid
             products={items}
             columns={4}
+            filter={{ collectionId: collection.id, collectionSlug: slug }}
             emptyTitle="No pieces in this collection currently"
             emptyDescription="New pieces are being selected for this collection."
           />

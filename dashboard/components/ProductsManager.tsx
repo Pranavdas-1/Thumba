@@ -2,8 +2,10 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { Collection, Product } from "@thumba/shared";
+import { mapRealtimeProductRow } from "@thumba/shared";
 import { CATEGORY_LABELS, formatCurrency, slugify } from "@thumba/shared";
 import { ArrowDown, ArrowUp, Eye, EyeOff, Link2, Trash2, Upload } from "lucide-react";
+import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 type ProductForm = {
   name: string;
@@ -81,6 +83,43 @@ export function ProductsManager({
   const [collectionName, setCollectionName] = useState("");
   const [creatingCollection, setCreatingCollection] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel("admin-products")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "products" },
+        (payload) => {
+          const row = payload.eventType === "DELETE" ? payload.old : payload.new;
+          const productId = typeof row.id === "string" ? row.id : "";
+          setProducts((current) => {
+            if (payload.eventType === "DELETE") {
+              return current.filter((product) => product.id !== productId);
+            }
+
+            const existing = current.find((product) => product.id === productId);
+            const next = mapRealtimeProductRow(row as Record<string, unknown>, existing);
+            if (!next) return current;
+            if (existing && existing.stock === next.stock && existing.hidden === next.hidden && existing.updatedAt === next.updatedAt) return current;
+            if (existing) return current.map((product) => product.id === next.id ? next : product);
+            return [next, ...current];
+          });
+        },
+      )
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+          console.warn("[thumba] admin product Realtime channel status:", status);
+        }
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, []);
 
   const pendingPreviewUrls = useMemo(
     () => form.pendingImages.map((file) => URL.createObjectURL(file)),

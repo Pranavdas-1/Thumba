@@ -63,6 +63,12 @@ export default async function ShopPage({
           <ProductGrid
             products={items}
             columns={3}
+            filter={{
+              category: category && category !== 'all' ? category : undefined,
+              collectionSlug: collection,
+              price,
+              search,
+            }}
             emptyTitle="No jewelry matches your filters"
             emptyDescription="Try clearing a category or price filter to see more of the available collection."
           />

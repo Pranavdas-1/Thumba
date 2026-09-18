@@ -21,6 +21,13 @@ export {
 } from "./utils";
 
 export {
+  isRealtimeProductPurchasable,
+  mapRealtimeProductRow,
+  matchesRealtimeProduct,
+} from "./realtime";
+export type { ProductRealtimeFilter } from "./realtime";
+
+export {
   BRAND,
   RAZORPAY_CURRENCY,
   RAZORPAY_ORDER_STATUS,
