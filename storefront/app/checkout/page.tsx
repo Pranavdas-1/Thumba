@@ -24,6 +24,11 @@ type RazorpaySuccess = {
   razorpay_signature: string;
 };
 
+type RazorpayInstance = {
+  open: () => void;
+  on?: (event: string, handler: (response: unknown) => void) => void;
+};
+
 type CheckoutField = 'name' | 'email' | 'street' | 'city' | 'state' | 'zipCode';
 type FieldErrors = Partial<Record<CheckoutField, string>>;
 
@@ -34,7 +39,7 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 
 declare global {
   interface Window {
-    Razorpay?: new (options: Record<string, unknown>) => { open: () => void };
+    Razorpay?: new (options: Record<string, unknown>) => RazorpayInstance;
   }
 }
 
@@ -201,6 +206,7 @@ export default function CheckoutPage() {
       zipCode: values.zipCode,
     };
 
+    let releasePendingReservation: (() => Promise<void>) | undefined;
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
@@ -212,6 +218,20 @@ export default function CheckoutPage() {
       if (!response.ok) {
         throw new Error(data.error || 'Could not start checkout');
       }
+
+      let reservationSettled = false;
+      releasePendingReservation = async () => {
+        if (reservationSettled) return;
+        reservationSettled = true;
+        await fetch('/api/checkout/release', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reservationId: data.reservationId,
+            reservationToken: data.reservationToken,
+          }),
+        }).catch(() => undefined);
+      };
 
       await loadRazorpayScript();
       if (!window.Razorpay) {
@@ -234,6 +254,7 @@ export default function CheckoutPage() {
                 razorpayOrderId: payment.razorpay_order_id,
                 paymentId: payment.razorpay_payment_id,
                 razorpaySignature: payment.razorpay_signature,
+                reservationToken: data.reservationToken,
                 customer: {
                   name: values.name,
                   email: values.email,
@@ -248,6 +269,7 @@ export default function CheckoutPage() {
             });
             const result = await confirmation.json();
             if (!confirmation.ok) throw new Error(result.error || 'Could not save the order');
+            reservationSettled = true;
             clear();
             setPaymentDetails(payment);
             setStatus('paid');
@@ -259,6 +281,7 @@ export default function CheckoutPage() {
         },
         modal: {
           ondismiss: () => {
+            void releasePendingReservation?.();
             setStatus('idle');
             setMessage('Checkout window closed.');
           },
@@ -273,8 +296,15 @@ export default function CheckoutPage() {
         },
       });
 
+      checkout.on?.('payment.failed', () => {
+        void releasePendingReservation?.();
+        setStatus('error');
+        setMessage('Payment failed; the reserved stock has been released.');
+      });
+
       checkout.open();
     } catch (error) {
+      await releasePendingReservation?.();
       setStatus('error');
       setMessage(error instanceof Error ? error.message : 'Checkout failed');
     }

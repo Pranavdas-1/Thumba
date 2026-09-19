@@ -81,6 +81,22 @@ model Order {
   @@map("orders")
 }
 
+model StockReservation {
+  id              String                    @id @default(cuid())
+  tokenHash       String
+  razorpayOrderId String?                   @unique
+  items           Json
+  total           Float
+  amountPaise     Int
+  status          StockReservationStatus    @default(PENDING)
+  expiresAt       DateTime
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([status, expiresAt])
+  @@map("stock_reservations")
+}
+
 model OrderItem {
   id        String   @id @default(cuid())
   orderId   String
@@ -132,4 +148,11 @@ enum Category {
 enum OrderStatus {
   INCOMPLETE
   COMPLETE
+}
+
+enum StockReservationStatus {
+  PENDING
+  CONFIRMED
+  RELEASED
+  EXPIRED
 }
