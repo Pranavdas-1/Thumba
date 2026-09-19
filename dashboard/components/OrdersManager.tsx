@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { formatCurrency, formatDate } from "@thumba/shared";
 import { AlertTriangle, CheckCircle2, ChevronRight, Clock3, MapPin, X } from "lucide-react";
-import { getSupabaseBrowserClient } from "@/lib/supabase-browser";
 
 export type AdminOrder = {
   id: string;
@@ -44,84 +43,34 @@ export function OrdersManager({ initialOrders }: { initialOrders: AdminOrder[] }
   const [selected, setSelected] = useState<AdminOrder | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const knownOrderIds = useRef(new Set(initialOrders.map((order) => order.id)));
-
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    const updateFromRow = (row: Record<string, unknown>, hydrate: boolean) => {
-      const id = typeof row.id === "string" ? row.id : "";
-      if (!id) return;
-      const createdAt = typeof row.createdAt === "string" ? row.createdAt : new Date().toISOString();
-      const status = row.status === "COMPLETE" ? "complete" : "incomplete";
-      const total = Number(row.total);
-      const next: AdminOrder = {
-        id,
-        total: Number.isFinite(total) ? total : 0,
-        status,
-        createdAt,
-        delayed: status === "incomplete" && new Date(createdAt).getTime() < Date.now() - 2 * 24 * 60 * 60 * 1000,
-        customerName: "New customer",
-        customerEmail: "",
-        customerPhone: "",
-        shipping: null,
-        items: [],
-      };
-
-      setOrders((current) => {
-        const existing = current.find((order) => order.id === id);
-        if (!existing) return [next, ...current];
-        if (existing.total === next.total && existing.status === next.status && existing.createdAt === next.createdAt && existing.delayed === next.delayed) return current;
-        return current.map((order) => order.id === id ? { ...order, total: next.total, status: next.status, createdAt: next.createdAt, delayed: next.delayed } : order);
-      });
-      setSelected((current) => current?.id === id
-        ? { ...current, total: next.total, status: next.status, createdAt: next.createdAt, delayed: next.delayed }
-        : current);
-
-      if (!hydrate) return;
-
-      void fetch(`/api/orders/${id}`)
-        .then((response) => response.ok ? response.json() : null)
-        .then((data) => {
-          if (!data?.order) return;
-          setOrders((current) => {
-            const existing = current.find((order) => order.id === id);
-            if (!existing) return [data.order as AdminOrder, ...current];
-            return current.map((order) => order.id === id ? data.order as AdminOrder : order);
-          });
-          setSelected((current) => current?.id === id ? data.order as AdminOrder : current);
-        })
-        .catch(() => undefined);
+    let inFlight = false;
+    let active = true;
+    const refreshOrders = async () => {
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const response = await fetch("/api/orders", { cache: "no-store" });
+        const data = await response.json();
+        if (!active || !response.ok || !Array.isArray(data.orders)) return;
+        const nextOrders = data.orders as AdminOrder[];
+        setOrders(nextOrders);
+        setSelected((current) => {
+          if (!current) return current;
+          return nextOrders.find((order) => order.id === current.id) ?? null;
+        });
+      } catch {
+        // Keep the last known list visible if a refresh is temporarily unavailable.
+      } finally {
+        inFlight = false;
+      }
     };
 
-    const channel = supabase
-      .channel("admin-orders")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders" },
-        (payload) => {
-          if (payload.eventType === "DELETE") {
-            const id = typeof payload.old.id === "string" ? payload.old.id : "";
-            setOrders((current) => current.filter((order) => order.id !== id));
-            setSelected((current) => current?.id === id ? null : current);
-            return;
-          }
-          const row = payload.new as Record<string, unknown>;
-          const id = typeof row.id === "string" ? row.id : "";
-          const hydrate = Boolean(id && !knownOrderIds.current.has(id));
-          if (id) knownOrderIds.current.add(id);
-          updateFromRow(row, hydrate);
-        },
-      )
-      .subscribe((status) => {
-        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-          console.warn("[thumba] admin order Realtime channel status:", status);
-        }
-      });
-
+    void refreshOrders();
+    const interval = window.setInterval(() => void refreshOrders(), 5000);
     return () => {
-      void supabase.removeChannel(channel);
+      active = false;
+      window.clearInterval(interval);
     };
   }, []);
 
